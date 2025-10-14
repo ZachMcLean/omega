@@ -25,7 +25,7 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-8">
-        <Header appName="GainGang" />
+        <Header appName="Omega" />
 
         {/* KPIs */}
         <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
