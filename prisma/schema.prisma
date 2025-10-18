@@ -70,9 +70,9 @@ model Session {
 model Account {
   id                 String   @id @default(cuid())
   userId             String
-  type               String
-  provider           String
-  providerAccountId  String
+  providerId         String
+  accountId          String
+  password           String?         // for credentials provider
   refreshToken       String?
   accessToken        String?
   expiresAt          Int?
@@ -85,7 +85,7 @@ model Account {
 
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
+  @@unique([providerId, accountId])
 }
 
 model VerificationToken {
