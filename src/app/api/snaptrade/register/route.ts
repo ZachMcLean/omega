@@ -1,20 +1,35 @@
-import { Snaptrade } from "snaptrade-typescript-sdk";
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { registerSnapTradeUser } from "@/lib/snaptrade";
 
-const client = new Snaptrade({
-  clientId: "LOGOS-TEST-GUZDW",
-  consumerKey:
-    "AXiJlQRZcHHpvrFRtft3UWAmvdrLoKopgqwuix00dCd2U0RcKY",
-});
+export async function POST(req: NextRequest) {
+  const session = await auth.api.getSession({ headers: req.headers });
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-const response =
-  await client.authentication.loginSnapTradeUser(
-    {
-      userId: "zach-72",
-      userSecret:
-        "96ab2105-ce70-4c45-af78-7ac84df7df89",
-      broker: "ROBINHOOD",
-      connectionType: "read",
-      connectionPortalVersion: "v4",
+  const omegaUserId = session.user.id; // your app's user id
+  // SnapTrade's userId can be your own user id
+  const snaptradeUserId = omegaUserId;
+
+  const existing = await prisma.snaptradeUser.findUnique({ where: { userId: omegaUserId } });
+  if (existing) {
+    return NextResponse.json({ ok: true });
+  }
+
+  const data = await registerSnapTradeUser(snaptradeUserId);
+  const userSecret =
+    (data as any).userSecret ?? (data as any).user_secret ?? (data as any).secret;
+  if (!userSecret) {
+    return NextResponse.json({ error: "SnapTrade did not return userSecret" }, { status: 502 });
+  }
+
+  await prisma.snaptradeUser.create({
+    data: {
+      userId: omegaUserId,
+      snaptradeUserId,
+      userSecret,
     },
-  );
-console.log(response.data);
+  });
+
+  return NextResponse.json({ ok: true });
+}
