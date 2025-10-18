@@ -22,7 +22,7 @@ export default function SignUpPage() {
         password,
         name,
         image: image || undefined,
-        callbackURL: "/dashboard", // or your verify page if autoSignIn=false
+        callbackURL: "/start", // or your verify page if autoSignIn=false
       },
       {
         onRequest: () => setLoading(true),
@@ -82,13 +82,13 @@ export default function SignUpPage() {
 
       <div className="space-y-2">
         <button
-          onClick={() => signIn.social({ provider: "github", callbackURL: "/dashboard" })}
+          onClick={() => signIn.social({ provider: "github", callbackURL: "/start" })}
           className="w-full rounded border px-3 py-2"
         >
           Continue with GitHub
         </button>
         <button
-          onClick={() => signIn.social({ provider: "google", callbackURL: "/dashboard" })}
+          onClick={() => signIn.social({ provider: "google", callbackURL: "/start" })}
           className="w-full rounded border px-3 py-2"
         >
           Continue with Google

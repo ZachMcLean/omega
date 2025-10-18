@@ -53,6 +53,9 @@ export default function StartPage() {
 
   useEffect(() => {
     loadData();
+    if (linked) {
+      fetch("/api/onboarding/complete", { method: "POST" }).catch(() => {});
+    }
   }, [linked]);
 
   return (

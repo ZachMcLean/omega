@@ -1,4 +1,5 @@
 import { Snaptrade } from "snaptrade-typescript-sdk";
+import { prisma } from "./prisma";
 
 export const snaptrade = new Snaptrade({
   clientId: process.env.SNAPTRADE_CLIENT_ID!,
@@ -30,4 +31,35 @@ export async function loginSnapTradeUser(params: {
     immediateRedirect: params.immediateRedirect,
   });
   return res.data;
+}
+
+export type SnaptradeUserAuth = { snaptradeUserId: string; userSecret: string };
+
+export async function ensureSnaptradeUser(userId: string): Promise<SnaptradeUserAuth> {
+  const existing = await prisma.snaptradeUser.findUnique({ where: { userId } });
+  if (existing) {
+    return { snaptradeUserId: existing.snaptradeUserId, userSecret: existing.userSecret };
+  }
+
+  const data = await registerSnapTradeUser(userId);
+  const userSecret =
+    (data as any).userSecret ?? (data as any).user_secret ?? (data as any).secret;
+
+  if (!userSecret) {
+    throw new Error("SnapTrade did not return userSecret");
+  }
+
+  try {
+    const created = await prisma.snaptradeUser.create({
+      data: { userId, snaptradeUserId: userId, userSecret },
+    });
+    return { snaptradeUserId: created.snaptradeUserId, userSecret: created.userSecret };
+  } catch (e) {
+    // Handle rare create-vs-create races in concurrent requests
+    const again = await prisma.snaptradeUser.findUnique({ where: { userId } });
+    if (again) {
+      return { snaptradeUserId: again.snaptradeUserId, userSecret: again.userSecret };
+    }
+    throw e;
+  }
 }
