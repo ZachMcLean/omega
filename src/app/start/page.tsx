@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { AccountBalance } from "./components/account-balance";
 
 type Connection = { id: string; brokerage?: { name?: string; slug?: string }; disabled?: boolean };
 type Account = { id: string; name?: string; broker?: string };
@@ -57,13 +58,19 @@ export default function StartPage() {
   useEffect(() => {
     loadData();
     if (linked) {
-      fetch("/api/onboarding/complete", { method: "POST" }).catch(() => {});
+      fetch("/api/complete", { method: "POST" }).catch(() => {});
     }
   }, [linked]);
 
   return (
     <div className="mx-auto max-w-xl p-6 space-y-4">
-      <div className="flex items-center justify-end pb-2">
+      <div className="flex flex-col space-y-2 items-center justify-end pb-2">
+      <h1 className="text-5xl font-bold tracking-tight text-emerald-400">
+        Ωmega
+      </h1>
+      <p className="text-slate-400 mt-2">
+        The endgame portfolio tracker for you and the boys.
+      </p>
         {session?.user ? (
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
@@ -71,7 +78,13 @@ export default function StartPage() {
             </span>
             <Button
               variant="outline"
-              onClick={() => signOut({ query: { callbackURL: "/signin" } })}
+              onClick={async () => {
+                try {
+                 await signOut({ query: { callbackURL: "/signin" } });
+                } finally {
+                  router.push("/signin");
+                }
+              }}
             >
               Sign out
             </Button>
@@ -100,6 +113,7 @@ export default function StartPage() {
           <CardTitle>Connections</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
+          <p className="text-xs text-muted-foreground">Your linked brokerages.</p>
           {connections.length === 0 ? (
             <p className="text-sm text-muted-foreground">No connections yet.</p>
           ) : (
@@ -124,6 +138,7 @@ export default function StartPage() {
           <CardTitle>Accounts</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
+          <p className="text-xs text-muted-foreground">Your accounts across all linked brokerages.</p>
           {accounts.length === 0 ? (
             <p className="text-sm text-muted-foreground">No accounts yet.</p>
           ) : (
@@ -133,6 +148,15 @@ export default function StartPage() {
               </div>
             ))
           )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Account Balance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <AccountBalance broker="ROBINHOOD" linked={linked} />
         </CardContent>
       </Card>
     </div>

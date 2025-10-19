@@ -9,17 +9,17 @@ export default async function StartLayout({ children }: { children: React.ReactN
     headers: new Headers(Object.fromEntries(h.entries())),
   });
   if (!session?.user?.id) {
-    redirect("/signup");
+    redirect("/signin");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { onboardingComplete: true },
-  });
+  // const user = await prisma.user.findUnique({
+  //   where: { id: session.user.id },
+  //   select: { onboardingComplete: true },
+  // });
 
-  if (!user?.onboardingComplete) {
-    redirect("/signup");
-  }
+  // if (!user?.onboardingComplete) {
+  //   redirect("/signup");
+  // }
 
   return <>{children}</>;
 }
