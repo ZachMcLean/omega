@@ -1,9 +1,10 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { signUp, signIn } from "@/lib/auth-client"; // you already export these
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [image, setImage] = useState("");
@@ -30,10 +31,12 @@ export default function SignUpPage() {
           // If autoSignIn=true, user is logged in and redirected by callbackURL.
           // If autoSignIn=false, show a “check your email” message or redirect.
           setLoading(false);
+          router.push("/start");
         },
         onError: (ctx) => {
           setErr(ctx.error.message);
           setLoading(false);
+          console.error(ctx.error);
         },
       }
     );

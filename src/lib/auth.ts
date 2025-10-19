@@ -8,7 +8,7 @@ export const auth = betterAuth({
   // Configure providers/flows you want (email/password, passkeys, OAuth, etc.)
   emailAndPassword: {
     enabled: true,
-    autoSignIn: false,
+    autoSignIn: true,
   },
   socialProviders: {
     github: {

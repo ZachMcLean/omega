@@ -1,5 +1,6 @@
 "use client";
-
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "@/lib/auth-client";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -9,6 +10,8 @@ type Connection = { id: string; brokerage?: { name?: string; slug?: string }; di
 type Account = { id: string; name?: string; broker?: string };
 
 export default function StartPage() {
+  const router = useRouter();
+  const { data: session, isPending } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -60,6 +63,25 @@ export default function StartPage() {
 
   return (
     <div className="mx-auto max-w-xl p-6 space-y-4">
+      <div className="flex items-center justify-end pb-2">
+        {session?.user ? (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              {session.user.name ?? session.user.email}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => signOut({ query: { callbackURL: "/signin" } })}
+            >
+              Sign out
+            </Button>
+          </div>
+        ) : (
+          <Button variant="outline" onClick={() => router.push("/signin")}>
+            Sign in
+          </Button>
+        )}
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Link your brokerage</CardTitle>
