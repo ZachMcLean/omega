@@ -23,7 +23,7 @@ export default function SignUpPage() {
         password,
         name,
         image: image || undefined,
-        callbackURL: "/start", // or your verify page if autoSignIn=false
+        callbackURL: "/verify", // or your verify page if autoSignIn=false
       },
       {
         onRequest: () => setLoading(true),
@@ -31,7 +31,7 @@ export default function SignUpPage() {
           // If autoSignIn=true, user is logged in and redirected by callbackURL.
           // If autoSignIn=false, show a “check your email” message or redirect.
           setLoading(false);
-          router.push("/start");
+          router.push(`/verify?email=${encodeURIComponent(email)}`);
         },
         onError: (ctx) => {
           setErr(ctx.error.message);

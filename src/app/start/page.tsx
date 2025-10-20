@@ -66,7 +66,9 @@ export default function StartPage() {
     <div className="mx-auto max-w-xl p-6 space-y-4">
       <div className="flex flex-col space-y-2 items-center justify-end pb-2">
       <h1 className="text-5xl font-bold tracking-tight text-emerald-400">
-        Ωmega
+        {/* Ωmega-Ȼrew */}
+        {/* Ωmega-𝓒rew */}
+        Ωmega-☾rew
       </h1>
       <p className="text-slate-400 mt-2">
         The endgame portfolio tracker for you and the boys.

@@ -52,7 +52,6 @@ export function AccountBalance({
     let cancelled = false;
     const run = async () => {
       const first = await fetchBalance(ctrl.signal);
-      // After linking, balances can take a moment to populate. Retry briefly.
       if (linked && !cancelled) {
         const isStale =
           !first ||
@@ -88,9 +87,18 @@ export function AccountBalance({
     };
   }, [broker, linked]);
 
-  const formatted = useMemo(() => {
+  const formatCurrency = (amount?: number, currency?: string) => {
+    if (amount == null || !currency) return null;
+    try {
+      return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+    } catch {
+      return amount.toLocaleString();
+    }
+  };
+
+  const formattedTotal = useMemo(() => {
     if (data?.total != null && data?.currency) {
-      return new Intl.NumberFormat(undefined, { style: "currency", currency: data.currency }).format(data.total);
+      return formatCurrency(data.total, data.currency);
     }
     return null;
   }, [data]);
@@ -103,15 +111,36 @@ export function AccountBalance({
           {loading ? "Refreshing..." : "Refresh"}
         </Button>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-3">
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
         {!error && (loading || syncing) ? (
           <p className="text-sm text-muted-foreground">
             {syncing ? "Syncing latest balance… this can take a few seconds after linking." : "Loading balance…"}
           </p>
         ) : null}
-        {!error && !loading && formatted ? <div className="text-2xl font-semibold">{formatted}</div> : null}
-        {!error && !loading && !formatted ? (
+
+        {!error && !loading && formattedTotal ? (
+          <div className="text-2xl font-semibold">{formattedTotal}</div>
+        ) : null}
+
+        {!error && !loading && Array.isArray(data?.accounts) && data!.accounts.length > 0 ? (
+          <div className="space-y-1">
+            {data!.accounts.map((a: any) => {
+              const amt = a?.balance?.total?.amount;
+              const cur = a?.balance?.total?.currency ?? data?.currency;
+              const display = formatCurrency(amt, cur);
+              return (
+                <div key={a.id} className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">{a?.name ?? a?.account_number ?? a.id}</span>
+                  <span className="font-medium">{display ?? "-"}</span>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {!error && !loading && !formattedTotal && (!data?.accounts || data.accounts.length === 0) ? (
           <p className="text-sm text-muted-foreground">No balance available. Make sure your brokerage is linked.</p>
         ) : null}
       </CardContent>
