@@ -9,7 +9,6 @@ import { ChallengesDialog } from "@/app/dashboard/components/dialogs/challenges-
 import { TrashTalkDialog } from "@/app/dashboard/components/dialogs/trash-talk-dialog";
 import { USERS, CHALLENGES, TRASH } from "@/app/dashboard/mock";
 import { changeFor, currency, signedPct } from "@/app/dashboard/utils";
-import { UserRow } from "@/app/dashboard/types";
 
 export default function TradingSquadPage() {
   const [expandedUser, setExpandedUser] = useState<number | null>(null);
