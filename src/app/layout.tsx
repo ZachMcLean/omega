@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Omega",
-  description: "The Final Grind",
+  title: "Trading-squad",
+  description: "The endgame portfolio tracker for collaboration and wealth creation",
 };
 
 export default function RootLayout({

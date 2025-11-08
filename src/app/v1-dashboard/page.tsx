@@ -1,18 +1,20 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Kpi } from "@/app/dashboard/components/kpi";
-import { Toolbar } from "@/app/dashboard/components/toolbar";
-import { LeaderboardRow } from "@/app/dashboard/components/leaderboard-row";
-import { ComparisonDialog } from "@/app/dashboard/components/dialogs/comparison-dialog";
-import { ChallengesDialog } from "@/app/dashboard/components/dialogs/challenges-dialog";
-import { TrashTalkDialog } from "@/app/dashboard/components/dialogs/trash-talk-dialog";
-import { USERS, CHALLENGES, TRASH } from "@/app/dashboard/mock";
-import { changeFor, currency, signedPct } from "@/app/dashboard/utils";
+import { Kpi } from "@/app/v1-dashboard/components/kpi";
+import { Toolbar } from "@/app/v1-dashboard/components/toolbar";
+import { LeaderboardRow } from "@/app/v1-dashboard/components/leaderboard-row";
+import { ComparisonDialog } from "@/app/v1-dashboard/components/dialogs/comparison-dialog";
+import { ChallengesDialog } from "@/app/v1-dashboard/components/dialogs/challenges-dialog";
+import { TrashTalkDialog } from "@/app/v1-dashboard/components/dialogs/trash-talk-dialog";
+import { USERS, CHALLENGES, TRASH } from "@/app/v1-dashboard/mock";
+import { changeFor, currency, signedPct } from "@/app/v1-dashboard/utils";
+// import { Navigation } from "@/components/navigation";
 
 export default function TradingSquadPage() {
   const [expandedUser, setExpandedUser] = useState<number | null>(null);
   const [timeframe, setTimeframe] = useState<"daily" | "weekly" | "monthly">("daily");
+  const [selectedPeriod, setSelectedPeriod] = useState<"1D" | "1W" | "1M" | "3M" | "6M" | "1Y" | "YTD">("1D");
   const [showTrashTalk, setShowTrashTalk] = useState(false);
   const [showChallenges, setShowChallenges] = useState(false);
   const [showComparison, setShowComparison] = useState(false);

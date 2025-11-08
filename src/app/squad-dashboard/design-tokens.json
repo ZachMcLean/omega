@@ -1,0 +1,202 @@
+{
+  "name": "Neon Fintech Design System",
+  "description": "Cyberpunk trading dashboard color scheme - Dark mode gaming meets modern fintech",
+  "colors": {
+    "semantic": {
+      "success": {
+        "primary": "#10b981",
+        "light": "#34d399",
+        "rgb": "16, 185, 129",
+        "usage": "Positive changes, wins, profits, growth"
+      },
+      "danger": {
+        "primary": "#ef4444",
+        "light": "#f87171",
+        "rgb": "239, 68, 68",
+        "usage": "Negative changes, losses, warnings"
+      },
+      "achievement": {
+        "primary": "#eab308",
+        "light": "#facc15",
+        "dark": "#ca8a04",
+        "rgb": "234, 179, 8",
+        "usage": "Achievements, streaks, MVP, gold medals"
+      },
+      "info": {
+        "primary": "#06b6d4",
+        "light": "#22d3ee",
+        "rgb": "6, 182, 212",
+        "usage": "Primary charts, activity, team shares"
+      },
+      "special": {
+        "primary": "#a855f7",
+        "light": "#c084fc",
+        "rgb": "168, 85, 247",
+        "usage": "Challenges, milestones, special features"
+      },
+      "secondary": {
+        "primary": "#3b82f6",
+        "light": "#60a5fa",
+        "rgb": "59, 130, 246",
+        "usage": "Trading styles, secondary info"
+      },
+      "energy": {
+        "primary": "#f97316",
+        "light": "#fb923c",
+        "dark": "#ea580c",
+        "rgb": "249, 115, 22",
+        "usage": "Highlights, hot items, energy"
+      }
+    },
+    "medals": {
+      "gold": {
+        "from": "#facc15",
+        "to": "#eab308",
+        "border": "#facc15",
+        "opacity": "0.5",
+        "shadow": "rgba(234, 179, 8, 0.3)"
+      },
+      "silver": {
+        "from": "#cbd5e1",
+        "to": "#94a3b8",
+        "border": "#cbd5e1",
+        "opacity": "0.5",
+        "shadow": "rgba(148, 163, 184, 0.2)"
+      },
+      "bronze": {
+        "from": "#d97706",
+        "to": "#b45309",
+        "border": "#d97706",
+        "opacity": "0.5",
+        "shadow": "rgba(217, 119, 6, 0.2)"
+      }
+    },
+    "base": {
+      "darkest": {
+        "hex": "#0f172a",
+        "rgb": "15, 23, 42",
+        "usage": "Main background gradient"
+      },
+      "darker": {
+        "hex": "#1e293b",
+        "rgb": "30, 41, 59",
+        "usage": "Card backgrounds"
+      },
+      "dark": {
+        "hex": "#334155",
+        "rgb": "51, 65, 85",
+        "usage": "Borders, dividers"
+      },
+      "medium": {
+        "hex": "#475569",
+        "rgb": "71, 85, 105",
+        "usage": "Inactive states"
+      },
+      "light": {
+        "hex": "#64748b",
+        "rgb": "100, 116, 139",
+        "usage": "Secondary text"
+      }
+    },
+    "text": {
+      "primary": {
+        "hex": "#ffffff",
+        "rgb": "255, 255, 255",
+        "usage": "Main headings, values"
+      },
+      "secondary": {
+        "hex": "#cbd5e1",
+        "rgb": "203, 213, 225",
+        "usage": "Badge text"
+      },
+      "tertiary": {
+        "hex": "#94a3b8",
+        "rgb": "148, 163, 184",
+        "usage": "Labels, captions"
+      },
+      "quaternary": {
+        "hex": "#64748b",
+        "rgb": "100, 116, 139",
+        "usage": "Muted text"
+      }
+    }
+  },
+  "gradients": {
+    "backgrounds": {
+      "main": "linear-gradient(to bottom right, #0f172a, #1e293b, #0f172a)",
+      "userHighlight": "linear-gradient(to right, rgba(16, 185, 129, 0.05), transparent)",
+      "milestone": "linear-gradient(to right, rgba(168, 85, 247, 0.1), rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1))",
+      "teamStrength": "linear-gradient(to right, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1))",
+      "riskMetrics": "linear-gradient(to right, rgba(245, 158, 11, 0.1), rgba(249, 115, 22, 0.1))"
+    },
+    "avatars": {
+      "orange": "linear-gradient(to bottom right, #f97316, #ef4444)",
+      "blue": "linear-gradient(to bottom right, #3b82f6, #06b6d4)",
+      "green": "linear-gradient(to bottom right, #10b981, #22c55e)",
+      "purple": "linear-gradient(to bottom right, #a855f7, #ec4899)",
+      "red": "linear-gradient(to bottom right, #ef4444, #f97316)",
+      "indigo": "linear-gradient(to bottom right, #6366f1, #3b82f6)",
+      "yellow": "linear-gradient(to bottom right, #eab308, #f59e0b)",
+      "teal": "linear-gradient(to bottom right, #14b8a6, #06b6d4)"
+    },
+    "progress": {
+      "teamShare": "linear-gradient(to right, #06b6d4, #3b82f6)",
+      "milestone": "linear-gradient(to bottom, #a855f7, #06b6d4)"
+    }
+  },
+  "effects": {
+    "shadows": {
+      "cardPrimary": "0 20px 25px -5px rgba(6, 182, 212, 0.1)",
+      "goldGlow": "0 8px 16px rgba(234, 179, 8, 0.3)",
+      "silverGlow": "0 8px 16px rgba(148, 163, 184, 0.2)",
+      "bronzeGlow": "0 8px 16px rgba(217, 119, 6, 0.2)"
+    },
+    "blur": {
+      "backdrop": "backdrop-filter: blur(8px)",
+      "avatarGlow": "filter: blur(12px)"
+    }
+  },
+  "spacing": {
+    "cardPadding": {
+      "mobile": "16px",
+      "desktop": "20px"
+    },
+    "sectionPadding": {
+      "mobile": "16px",
+      "desktop": "24px"
+    },
+    "gaps": {
+      "tight": "6px",
+      "compact": "8px",
+      "standard": "12px",
+      "comfortable": "16px"
+    }
+  },
+  "borderRadius": {
+    "small": "4px",
+    "medium": "6px",
+    "large": "8px",
+    "extraLarge": "12px",
+    "full": "9999px"
+  },
+  "opacity": {
+    "subtle": 0.05,
+    "light": 0.1,
+    "medium": 0.15,
+    "standard": 0.2,
+    "prominent": 0.3,
+    "strong": 0.5
+  },
+  "tailwindClasses": {
+    "commonPatterns": {
+      "mainContainer": "min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950",
+      "card": "border-slate-700/50 bg-slate-800/30 backdrop-blur-sm overflow-hidden shadow-xl",
+      "statPillSuccess": "flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-xs text-emerald-400",
+      "statPillDanger": "flex items-center gap-1 px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400",
+      "statPillInfo": "flex items-center gap-1 px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded text-xs text-cyan-400",
+      "statPillAchievement": "flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded text-xs text-yellow-400",
+      "performanceBadgePositive": "flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/15 text-emerald-400",
+      "performanceBadgeNegative": "flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/15 text-red-400"
+    }
+  }
+}

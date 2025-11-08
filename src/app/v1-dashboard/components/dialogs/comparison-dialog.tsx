@@ -5,8 +5,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Flame } from "lucide-react";
-import { UserRow } from "@/app/dashboard/types";
-import { currency } from "@/app/dashboard/utils";
+import { UserRow } from "@/app/v1-dashboard/types";
+import { currency } from "@/app/v1-dashboard/utils";
 
 export function ComparisonDialog({
   open,

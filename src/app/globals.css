@@ -1,19 +1,150 @@
 @import "tailwindcss";
-@import "tw-animate-css"; 
+@import "tw-animate-css";
 
-/* Class-driven dark mode (great with next-themes) */
 @custom-variant dark (&:is(.dark *));
 
-/* Map Tailwind color names to your CSS variables */
+/* =========================
+   NEON FINTECH DESIGN SYSTEM
+   Squad Dashboard (Figma Make) - Enhanced
+   Based on design-tokens.json
+   ========================= */
+
+:root {
+  /* Typography */
+  --font-size: 16px;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  
+  /* Border radius */
+  --radius: 0.625rem;
+
+  /* Light theme - Clean, minimal for auth/landing pages */
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --ring: oklch(0.708 0 0);
+
+  /* Chart colors (light mode) */
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+
+  /* Sidebar (light mode) */
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* NEON FINTECH SEMANTIC COLORS (from design-tokens.json) */
+  /* Light mode versions - less saturated */
+  --gain: #059669;              /* emerald-600 for light bg */
+  --loss: #dc2626;              /* red-600 for light bg */
+  --achievement: #ca8a04;       /* yellow-600 for light bg */
+  --info: #0891b2;              /* cyan-600 for light bg */
+  --special: #9333ea;           /* purple-600 for light bg */
+  --energy: #ea580c;            /* orange-600 for light bg */
+}
+
+/* =========================
+   DARK THEME - NEON FINTECH
+   Cyberpunk slate aesthetic with neon accents
+   ========================= */
+.dark {
+  /* Deep slate backgrounds (design-tokens.json base colors) */
+  --background: #0f172a;        /* slate-950 - darkest */
+  --foreground: #f8fafc;        /* slate-50 - white text */
+  
+  --card: #1e293b;              /* slate-900 - card background */
+  --card-foreground: #f8fafc;   /* slate-50 */
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  
+  /* Primary - Keep neutral for flexibility */
+  --primary: #f8fafc;           /* white for dark mode */
+  --primary-foreground: #0f172a;
+  
+  /* Secondary/Muted - slate hierarchy */
+  --secondary: #334155;         /* slate-700 */
+  --secondary-foreground: #f8fafc;
+  --muted: #334155;             /* slate-700 */
+  --muted-foreground: #94a3b8;  /* slate-400 */
+  
+  /* Accent - slightly lighter slate */
+  --accent: #334155;            /* slate-700 */
+  --accent-foreground: #f8fafc;
+  
+  /* Destructive - red for errors */
+  --destructive: #ef4444;       /* red-500 */
+  --destructive-foreground: #fef2f2; /* red-50 */
+  
+  /* Controls - visible borders on dark */
+  --border: #334155;            /* slate-700 */
+  --input: #334155;             /* slate-700 */
+  --input-background: #1e293b;  /* slate-900 */
+  --switch-background: #475569; /* slate-600 */
+  --ring: #64748b;              /* slate-500 - focus ring */
+
+  /* Chart colors (dark mode - vibrant) */
+  --chart-1: #a855f7;           /* purple-500 */
+  --chart-2: #10b981;           /* emerald-500 */
+  --chart-3: #eab308;           /* yellow-500 */
+  --chart-4: #a855f7;           /* purple-500 */
+  --chart-5: #f97316;           /* orange-500 */
+
+  /* Sidebar (dark mode) */
+  --sidebar: #0f172a;           /* slate-950 */
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #06b6d4;   /* cyan-500 accent */
+  --sidebar-primary-foreground: #f8fafc;
+  --sidebar-accent: #1e293b;    /* slate-900 */
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: #334155;    /* slate-700 */
+  --sidebar-ring: #64748b;      /* slate-500 */
+
+  /* NEON FINTECH SEMANTIC COLORS (design-tokens.json) */
+  /* These are the core of the brand - use these for all performance/data display */
+  --gain: #10b981;              /* emerald-500 - success green */
+  --loss: #ef4444;              /* red-500 - danger red */
+  --achievement: #eab308;       /* yellow-500 - achievement gold */
+  --info: #06b6d4;              /* cyan-500 - activity cyan */
+  --special: #a855f7;           /* purple-500 - special purple */
+  --energy: #f97316;            /* orange-500 - energy orange */
+}
+
+/* Map CSS variables to Tailwind colors */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -23,104 +154,194 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
-
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
-
-  /* Brand helpers */
-  --color-gain: var(--gain);
-  --color-loss: var(--loss);
-
-  /* Radii synced to --radius */
+  
+  /* Chart colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  
+  /* Border radius scale */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  
+  /* Sidebar colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* SEMANTIC BRAND COLORS - Use these via Tailwind classes */
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
+  --color-achievement: var(--achievement);
+  --color-info: var(--info);
+  --color-special: var(--special);
+  --color-energy: var(--energy);
 }
 
-/* =========================
-   LIGHT THEME (default)
-   ========================= */
-:root {
-  --radius: 0.625rem;
-
-  /* Surfaces & text */
-  --background: oklch(0.98 0 0);        /* soft near-white */
-  --foreground: oklch(0.22 0.02 260);   /* slate ink */
-
-  --card: oklch(0.99 0 0);              /* true card white */
-  --card-foreground: var(--foreground);
-  --popover: var(--card);
-  --popover-foreground: var(--foreground);
-
-  /* Brand */
-  --primary: oklch(0.66 0.17 150);      /* emerald */
-  --primary-foreground: oklch(0.99 0 0);
-
-  /* Subtle panels / chips */
-  --secondary: oklch(0.96 0.01 260);
-  --secondary-foreground: oklch(0.30 0.02 260);
-
-  /* Muted text & fills */
-  --muted: oklch(0.96 0.01 260);
-  --muted-foreground: oklch(0.55 0.02 260);
-
-  /* Accent */
-  --accent: oklch(0.94 0.02 210);
-  --accent-foreground: oklch(0.28 0.03 210);
-
-  /* Feedback */
-  --destructive: oklch(0.62 0.18 25);
-
-  /* Controls */
-  --border: oklch(0.88 0.01 260);
-  --input: oklch(0.92 0.01 260);
-  --ring: oklch(0.72 0.05 150);         /* faint emerald focus */
-
-  /* Gains/Losses */
-  --gain: oklch(0.68 0.18 150);
-  --loss: oklch(0.60 0.15 27);
-}
-
-/* =========================
-   DARK THEME (.dark)
-   ========================= */
-.dark {
-  /* Key change: darker base, noticeably lighter cards, crisper borders */
-  --background: oklch(0.16 0.02 260);   /* deep slate */
-  --foreground: oklch(0.97 0.01 260);
-
-  --card: oklch(0.24 0.02 260);         /* ~8% lighter than bg */
-  --card-foreground: var(--foreground);
-  --popover: var(--card);
-  --popover-foreground: var(--foreground);
-
-  --primary: oklch(0.74 0.19 150);      /* brighter emerald on dark */
-  --primary-foreground: oklch(0.15 0.02 260);
-
-  --secondary: oklch(0.28 0.02 260);
-  --secondary-foreground: oklch(0.90 0.01 260);
-
-  --muted: oklch(0.27 0.02 260);
-  --muted-foreground: oklch(0.72 0.02 260);
-
-  --accent: oklch(0.30 0.03 210);
-  --accent-foreground: oklch(0.96 0.01 210);
-
-  --destructive: oklch(0.70 0.17 25);
-
-  /* Sharper borders/inputs for legibility */
-  --border: oklch(0.38 0.02 260);
-  --input: oklch(0.34 0.02 260);
-  --ring: oklch(0.70 0.19 150);
-
-  /* Gains/Losses (brighter for dark) */
-  --gain: oklch(0.74 0.20 150);
-  --loss: oklch(0.68 0.18 27);
-}
-
-/* Minimal base glue (let Tailwind do the rest) */
+/* Base styles */
 @layer base {
-  body { @apply bg-background text-foreground; }
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }
+
+/* Typography scale - semantic HTML defaults */
+@layer base {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
+    h1 {
+      font-size: 1.5rem;        /* 24px */
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h2 {
+      font-size: 1.25rem;       /* 20px */
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h3 {
+      font-size: 1.125rem;      /* 18px */
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    h4 {
+      font-size: 1rem;          /* 16px */
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    p {
+      font-size: 1rem;
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+
+    label {
+      font-size: 1rem;
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    button {
+      font-size: 1rem;
+      font-weight: var(--font-weight-medium);
+      line-height: 1.5;
+    }
+
+    input {
+      font-size: 1rem;
+      font-weight: var(--font-weight-normal);
+      line-height: 1.5;
+    }
+  }
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+/* =========================
+   NEON FINTECH UTILITY CLASSES
+   Common patterns from design-tokens.json
+   ========================= */
+
+/* Glass-morphic card pattern */
+.card-neon {
+  @apply border-slate-700/50 bg-slate-800/30 backdrop-blur-sm overflow-hidden shadow-xl;
+}
+
+/* Performance stat pills */
+.stat-pill-success {
+  @apply flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-xs text-emerald-400;
+}
+
+.stat-pill-danger {
+  @apply flex items-center gap-1 px-2 py-0.5 bg-red-500/10 border border-red-500/20 rounded text-xs text-red-400;
+}
+
+.stat-pill-info {
+  @apply flex items-center gap-1 px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 rounded text-xs text-cyan-400;
+}
+
+.stat-pill-achievement {
+  @apply flex items-center gap-1 px-2 py-0.5 bg-yellow-500/10 border border-yellow-500/20 rounded text-xs text-yellow-400;
+}
+
+/* Performance badge (larger) */
+.performance-badge-positive {
+  @apply flex items-center gap-1.5 px-2 py-1 rounded bg-emerald-500/15 text-emerald-400;
+}
+
+.performance-badge-negative {
+  @apply flex items-center gap-1.5 px-2 py-1 rounded bg-red-500/15 text-red-400;
+}
+
+/* Financial data - always use tabular numbers */
+.financial-value {
+  @apply tabular-nums tracking-tight;
+}
+
+/* =========================
+   V1 DASHBOARD LEGACY
+   Preserved for reference during migration
+   Delete after v1-dashboard is fully deprecated
+   ========================= */
+
+/*
+V1 used OKLCH color space throughout with these values:
+
+Light theme primary: oklch(0.66 0.17 150) - emerald
+Dark theme primary: oklch(0.74 0.19 150) - brighter emerald
+
+V1 gain/loss colors:
+Light --gain: oklch(0.68 0.18 150)
+Light --loss: oklch(0.60 0.15 27)
+Dark --gain: oklch(0.74 0.20 150)
+Dark --loss: oklch(0.68 0.18 27)
+
+If you need these exact OKLCH values, they can be reintroduced.
+Current squad system uses hex colors which are more compatible with design-tokens.json
+*/
+
+/* V1 had a custom card pattern:
+.card {
+  border: 1px solid oklch(0.38 0.02 260 / 0.5);
+  background: oklch(0.24 0.02 260 / 0.3);
+  backdrop-filter: blur(8px);
+}
+
+Equivalent in squad system is .card-neon utility class above.
+*/
+
+/* V1 ring colors (focus states):
+Light: oklch(0.72 0.05 150)
+Dark: oklch(0.70 0.19 150)
+
+Squad system uses simpler slate-based ring colors.
+If you need emerald focus rings, uncomment and use:
+
+.dark {
+  --ring: #10b981;
+}
+*/

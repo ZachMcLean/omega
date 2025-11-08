@@ -1,0 +1,265 @@
+NEON FINTECH DESIGN SYSTEM - FIGMA COLOR PALETTE
+================================================
+
+HOW TO IMPORT INTO FIGMA:
+1. Open Figma
+2. Go to any design file
+3. Click on the color picker
+4. Click "Color Styles" 
+5. Click the + icon to create new styles
+6. Copy each hex code below and create a style with the name shown
+7. Organize into folders by category (Success, Danger, Achievement, etc.)
+
+================================================
+
+🟢 SUCCESS / GROWTH COLORS
+--------------------------
+Success/Primary          #10B981
+Success/Light            #34D399
+Success/BG-5            #10B981 @ 5% opacity
+Success/BG-10           #10B981 @ 10% opacity
+Success/BG-15           #10B981 @ 15% opacity
+Success/BG-20           #10B981 @ 20% opacity
+Success/Border-20       #10B981 @ 20% opacity
+Success/Border-30       #10B981 @ 30% opacity
+
+
+🔴 DANGER / LOSS COLORS
+-----------------------
+Danger/Primary           #EF4444
+Danger/Light             #F87171
+Danger/BG-5             #EF4444 @ 5% opacity
+Danger/BG-10            #EF4444 @ 10% opacity
+Danger/BG-15            #EF4444 @ 15% opacity
+Danger/BG-20            #EF4444 @ 20% opacity
+Danger/Border-20        #EF4444 @ 20% opacity
+Danger/Border-30        #EF4444 @ 30% opacity
+
+
+🟡 ACHIEVEMENT / MVP COLORS
+---------------------------
+Achievement/Primary      #EAB308
+Achievement/Light        #FACC15
+Achievement/Dark         #CA8A04
+Achievement/BG-10       #EAB308 @ 10% opacity
+Achievement/BG-20       #EAB308 @ 20% opacity
+Achievement/Border-20   #EAB308 @ 20% opacity
+Achievement/Border-30   #EAB308 @ 30% opacity
+Achievement/Border-50   #EAB308 @ 50% opacity
+
+
+🔵 INFO / ACTIVITY COLORS (PRIMARY)
+-----------------------------------
+Info/Primary             #06B6D4
+Info/Light               #22D3EE
+Info/BG-10              #06B6D4 @ 10% opacity
+Info/BG-20              #06B6D4 @ 20% opacity
+Info/Border-20          #06B6D4 @ 20% opacity
+Info/Border-30          #06B6D4 @ 30% opacity
+Info/Border-50          #06B6D4 @ 50% opacity
+
+
+🟣 SPECIAL / CHALLENGE COLORS
+------------------------------
+Special/Primary          #A855F7
+Special/Light            #C084FC
+Special/BG-10           #A855F7 @ 10% opacity
+Special/BG-20           #A855F7 @ 20% opacity
+Special/Border-20       #A855F7 @ 20% opacity
+Special/Border-30       #A855F7 @ 30% opacity
+
+
+🔵 SECONDARY INFO / TAGS
+------------------------
+Secondary/Primary        #3B82F6
+Secondary/Light          #60A5FA
+Secondary/BG-10         #3B82F6 @ 10% opacity
+Secondary/Border-30     #3B82F6 @ 30% opacity
+
+
+🟠 ENERGY / HIGHLIGHTS
+----------------------
+Energy/Primary           #F97316
+Energy/Light             #FB923C
+Energy/Dark              #EA580C
+Energy/BG-10            #F97316 @ 10% opacity
+Energy/Border-20        #F97316 @ 20% opacity
+
+
+⚪ MEDAL COLORS
+--------------
+Medal/Gold-Light         #FACC15
+Medal/Gold-Dark          #EAB308
+Medal/Silver-Light       #CBD5E1
+Medal/Silver-Dark        #94A3B8
+Medal/Bronze-Light       #D97706
+Medal/Bronze-Dark        #B45309
+
+
+⚫ BASE / BACKGROUND COLORS
+--------------------------
+Base/Darkest             #0F172A  (slate-950)
+Base/Darker              #1E293B  (slate-800)
+Base/Dark                #334155  (slate-700)
+Base/Medium              #475569  (slate-600)
+Base/Light               #64748B  (slate-500)
+Base/Border-30          #334155 @ 30% opacity
+Base/Border-50          #334155 @ 50% opacity
+
+
+📝 TEXT COLORS
+--------------
+Text/Primary             #FFFFFF  (white)
+Text/Secondary           #CBD5E1  (slate-300)
+Text/Tertiary            #94A3B8  (slate-400)
+Text/Quaternary          #64748B  (slate-500)
+
+
+================================================
+
+🌈 GRADIENTS TO CREATE IN FIGMA:
+================================
+
+AVATAR GRADIENTS (Linear, 135° angle):
+---------------------------------------
+Avatar/Orange            #F97316 → #EF4444
+Avatar/Blue              #3B82F6 → #06B6D4
+Avatar/Green             #10B981 → #22C55E
+Avatar/Purple            #A855F7 → #EC4899
+Avatar/Red               #EF4444 → #F97316
+Avatar/Indigo            #6366F1 → #3B82F6
+Avatar/Yellow            #EAB308 → #F59E0B
+Avatar/Teal              #14B8A6 → #06B6D4
+
+
+BACKGROUND GRADIENTS:
+--------------------
+BG/Main                  #0F172A → #1E293B → #0F172A (radial or linear)
+BG/User-Highlight        #10B981 @ 5% → Transparent (left to right)
+BG/Milestone             #A855F7 @ 10% → #3B82F6 @ 10% → #06B6D4 @ 10%
+BG/Team-Strength         #06B6D4 @ 10% → #3B82F6 @ 10%
+BG/Risk-Metrics          #F59E0B @ 10% → #F97316 @ 10%
+
+
+PROGRESS FILLS:
+--------------
+Fill/Team-Share          #06B6D4 → #3B82F6 (left to right)
+Fill/Milestone           #A855F7 → #06B6D4 (top to bottom)
+
+
+MEDAL GRADIENTS (Linear, 135° angle):
+-------------------------------------
+Medal/Gold               #FACC15 → #EAB308
+Medal/Silver             #CBD5E1 → #94A3B8
+Medal/Bronze             #D97706 → #B45309
+
+
+================================================
+
+✨ EFFECTS TO CREATE IN FIGMA:
+==============================
+
+SHADOWS:
+--------
+Shadow/Card-Cyan         
+  - X: 0, Y: 20, Blur: 25, Spread: -5
+  - Color: #06B6D4 @ 10%
+
+Shadow/Glow-Gold
+  - X: 0, Y: 8, Blur: 16, Spread: 0
+  - Color: #EAB308 @ 30%
+
+Shadow/Glow-Silver
+  - X: 0, Y: 8, Blur: 16, Spread: 0
+  - Color: #94A3B8 @ 20%
+
+Shadow/Glow-Bronze
+  - X: 0, Y: 8, Blur: 16, Spread: 0
+  - Color: #D97706 @ 20%
+
+
+BLURS:
+------
+Blur/Backdrop            Background Blur: 8px
+Blur/Avatar-Glow         Layer Blur: 12px @ 30% opacity
+
+
+================================================
+
+📐 FIGMA SPACING & SIZING:
+==========================
+
+PADDING AUTO LAYOUT:
+-------------------
+Card/Mobile              16px all sides
+Card/Desktop             20px all sides
+Section/Mobile           16px all sides
+Section/Desktop          24px all sides
+
+GAPS (Auto Layout spacing):
+---------------------------
+Gap/Tight                6px
+Gap/Compact              8px
+Gap/Standard             12px
+Gap/Comfortable          16px
+
+CORNER RADIUS:
+-------------
+Radius/Small             4px
+Radius/Medium            6px
+Radius/Large             8px
+Radius/Extra-Large       12px
+Radius/Full              999px
+
+BORDER WIDTHS:
+-------------
+Border/Thin              1px
+Border/Standard          2px
+Border/Thick             3px
+
+
+================================================
+
+💡 FIGMA TIPS:
+=============
+
+1. Create a "Design Tokens" page in your Figma file
+2. Place all color swatches in organized frames
+3. Use the "Styles" feature to save all colors
+4. Export styles as a library to use across files
+5. Name styles consistently: Category/Variant
+6. Use plugins like "Design Tokens" to export/import
+7. Create component variants for different states
+
+RECOMMENDED PLUGINS:
+- Design Tokens (export to JSON)
+- Stark (accessibility checking)
+- Color Contrast Checker
+- Variables Import/Export
+
+
+================================================
+
+🎨 STYLE DESCRIPTION:
+====================
+
+"Neon Fintech" or "Cyberpunk Trading Dashboard"
+
+A vibrant, high-energy design combining sleek modern 
+fintech (Robinhood-style) with gaming dashboard 
+excitement. Dark backgrounds with neon-bright accents, 
+extensive gradients, glows, and color-coded data for 
+instant visual information scanning.
+
+Key Characteristics:
+- Dark slate base (#0F172A - #334155 range)
+- Bright saturated accent colors
+- Extensive use of opacity overlays
+- Gradient backgrounds and fills
+- Glowing shadows and effects
+- Color = semantic meaning (green=up, red=down, etc.)
+- Gaming energy meets professional finance
+
+
+================================================
+

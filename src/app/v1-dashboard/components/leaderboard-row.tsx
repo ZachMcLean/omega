@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { UserRow, Position, Margin } from "@/app/dashboard/types";
-import { currency } from "@/app/dashboard/utils";
+import { UserRow, Position, Margin } from "@/app/v1-dashboard/types";
+import { currency } from "@/app/v1-dashboard/utils";
 
 export function LeaderboardRow({
   u,

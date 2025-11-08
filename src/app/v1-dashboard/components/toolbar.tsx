@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { UserRow } from "@/app/dashboard/types";
-import { currency, signedPct } from "@/app/dashboard/utils";
+import { UserRow } from "@/app/v1-dashboard/types";
+import { currency, signedPct } from "@/app/v1-dashboard/utils";
 
 export function Toolbar({
   usersCount,

@@ -13,7 +13,7 @@ export async function sendEmail(opts: {
     from: opts.from ?? (process.env.EMAIL_FROM as string),
     to: opts.to,
     subject: opts.subject,
-    text: opts.text,
+    text: opts.text ?? "",
     html: opts.html,
   });
 }

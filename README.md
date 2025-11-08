@@ -1,5 +1,6 @@
-# 🟢 HoodWatch  
+# 🟢 TradingSquad.io
 **Social Portfolio Tracker for Robinhood Traders**
+
 
 HoodWatch is a sleek **Next.js 14 + Tailwind + Shadcn UI** app that lets you and your friends track your **Robinhood stock and crypto portfolios** together. Built for the squad — clean UI, real data, and dark mode perfection.
 
@@ -28,7 +29,7 @@ HoodWatch is a sleek **Next.js 14 + Tailwind + Shadcn UI** app that lets you and
 1. **Clone the repo**
    ```bash
    git clone https://github.com/yourusername/hoodwatch.git
-   cd hoodwatch
+   cd trading-squad
 2. **Install Dependencies**
 ```bash
    pnpm install

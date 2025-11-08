@@ -106,7 +106,6 @@ export const CHALLENGES = [
   { id: 2, title: "Most Trades This Week", target: 50, creator: "You", participants: ["You", "Jake"], winner: null as string | null, prize: "🎯 Trade Master Badge" },
   { id: 3, title: "5 Day Green Streak", target: 5, creator: "Jake", participants: ["Mike", "Jake"], winner: "Mike", prize: "🔥 Fire Streak NFT" },
 ];
-
 export const TRASH = [
   { id: 1, user: "Mike", message: "Y'all really thought you could beat me? 👑", timestamp: "2 hours ago", likes: 3 },
   { id: 2, user: "You", message: "Just wait till tomorrow Mike 😤", timestamp: "1 hour ago", likes: 2 },
