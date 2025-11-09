@@ -1,6 +1,11 @@
 "use client";
 
-import { Sparkles, Settings, UserPlus, BarChart, LogOut, Bell, Share2, TrendingUp, User, CreditCard, Shield, HelpCircle, FileText } from "lucide-react";
+/**
+ * Workspace Header - Page header with title, description, and user actions
+ * Displays notifications, settings, and profile dropdown
+ */
+
+import { Settings, Bell, LogOut, User, CreditCard, Shield, HelpCircle, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,53 +16,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-
-type TimePeriod = "1D" | "1W" | "1M" | "3M" | "6M" | "1Y" | "YTD";
+// TODO: Avatar components need to be ported from v11.2
+// import { OmegaPilotAvatar } from "@/components/avatar/OmegaPilotAvatar";
+// import { AvatarCustomizer } from "@/components/avatar/AvatarCustomizer";
+// import { useAvatarConfig } from "@/components/avatar/useAvatarConfig";
 
 interface WorkspaceHeaderProps {
-  workspaceName: string;
-  tagline: string;
-  selectedPeriod: TimePeriod;
-  onPeriodChange: (period: TimePeriod) => void;
+  pageTitle: string;
+  pageDescription?: string;
 }
 
 export function WorkspaceHeader({
-  workspaceName,
-  tagline,
-  selectedPeriod,
-  onPeriodChange,
+  pageTitle,
+  pageDescription,
 }: WorkspaceHeaderProps) {
-  const periods: TimePeriod[] = ["1D", "1W", "1M", "3M", "6M", "1Y", "YTD"];
-
-  // Mock online members
-  const onlineMembers = [
-    { name: "Mike", color: "from-orange-500 to-red-500", initial: "M" },
-    { name: "JAMB", color: "from-blue-500 to-cyan-500", initial: "J" },
-    { name: "You", color: "from-emerald-500 to-green-500", initial: "Y" },
-  ];
+  // TODO: Re-enable when avatar components are ported
+  // const avatarConfig = useAvatarConfig();
 
   return (
-    <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700/50 bg-gradient-to-b from-slate-800/30 to-transparent">
+    <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-slate-700/50 bg-gradient-to-b from-slate-800/30 to-transparent sticky top-0 z-30 backdrop-blur-sm">
       <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-        {/* Omega Logo */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-500 blur-lg opacity-30 rounded-xl"></div>
-            <div className="relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-500 via-cyan-500 to-blue-500 shadow-lg shadow-cyan-500/20">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-white" strokeWidth={2.5} />
-            </div>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <h1 className="text-base sm:text-xl md:text-2xl bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent whitespace-nowrap" style={{ WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                Omega Trading Squad
-              </h1>
-              <span className="px-1.5 py-0.5 text-[10px] bg-blue-500/20 text-blue-400 rounded border border-blue-500/30 uppercase tracking-wide flex-shrink-0">
-                Beta
-              </span>
-            </div>
-            <p className="text-slate-400 text-xs hidden sm:block truncate">The endgame portfolio tracker for collaboration and wealth creation</p>
-          </div>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-slate-100">{pageTitle}</h1>
+          {pageDescription && (
+            <p className="text-slate-400 text-sm hidden sm:block truncate">{pageDescription}</p>
+          )}
         </div>
       </div>
 
@@ -87,14 +70,14 @@ export function WorkspaceHeader({
               <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer flex-col items-start p-3">
                 <div className="flex items-center gap-2 w-full">
                   <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
-                  <span className="text-sm">Mike added TSLA position</span>
+                  <span className="text-sm">TechQueenGG added TSLA position</span>
                 </div>
                 <span className="text-xs text-slate-500 ml-4">2 minutes ago</span>
               </DropdownMenuItem>
               <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer flex-col items-start p-3">
                 <div className="flex items-center gap-2 w-full">
                   <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                  <span className="text-sm">Portfolio hit $210K milestone!</span>
+                  <span className="text-sm">Squad portfolio hit $1M milestone!</span>
                 </div>
                 <span className="text-xs text-slate-500 ml-4">1 hour ago</span>
               </DropdownMenuItem>
@@ -129,10 +112,6 @@ export function WorkspaceHeader({
               <Bell className="w-4 h-4 mr-2" />
               Notification Settings
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Display & Theme
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
@@ -145,13 +124,13 @@ export function WorkspaceHeader({
               className="flex items-center gap-2 text-slate-300 hover:text-white hover:bg-slate-700/50 pl-2 pr-3"
             >
               <Avatar className="w-8 h-8 border-2 border-cyan-500/30">
-                <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white text-xs">
-                  JD
+                <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-purple-500 text-white text-xs font-mono">
+                  FP
                 </AvatarFallback>
               </Avatar>
               <div className="hidden sm:flex flex-col items-start">
-                <span className="text-sm text-white">John Doe</span>
-                <span className="text-xs text-slate-400">Pro Trader</span>
+                <span className="text-sm text-white">FlippinPsycho98</span>
+                <span className="text-xs text-slate-400">Zach</span>
               </div>
             </Button>
           </DropdownMenuTrigger>
@@ -160,23 +139,23 @@ export function WorkspaceHeader({
             <div className="p-4 border-b border-slate-700">
               <div className="flex items-center gap-3 mb-3">
                 <Avatar className="w-12 h-12 border-2 border-cyan-500/30">
-                  <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-blue-500 text-white">
-                    JD
+                  <AvatarFallback className="bg-gradient-to-br from-cyan-500 to-purple-500 text-white text-sm font-mono">
+                    FP
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="text-white">John Doe</div>
-                  <div className="text-xs text-slate-400">john.doe@email.com</div>
+                  <div className="text-white font-medium">FlippinPsycho98</div>
+                  <div className="text-xs text-slate-400">Zach</div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-2 p-2 bg-slate-800/50 rounded-lg border border-slate-700/50">
                 <div>
                   <div className="text-xs text-slate-400">Portfolio Value</div>
-                  <div className="text-sm text-white">$247,582</div>
+                  <div className="text-sm text-white font-mono">$75,269</div>
                 </div>
                 <div>
                   <div className="text-xs text-slate-400">Today's P&L</div>
-                  <div className="text-sm text-emerald-400">+$2,847</div>
+                  <div className="text-sm text-emerald-400 font-mono">+$1,891</div>
                 </div>
               </div>
             </div>
@@ -187,6 +166,17 @@ export function WorkspaceHeader({
                 <User className="w-4 h-4 mr-2" />
                 View Profile
               </DropdownMenuItem>
+              {/* TODO: Re-enable when AvatarCustomizer is ported */}
+              {/* <AvatarCustomizer
+                currentConfig={avatarConfig.config}
+                onSave={avatarConfig.saveConfig}
+                trigger={
+                  <div className="flex items-center w-full px-2 py-1.5 hover:bg-slate-800 rounded-sm cursor-pointer text-slate-300 hover:text-white">
+                    <User className="w-4 h-4 mr-2" />
+                    <span>Customize Pilot Avatar</span>
+                  </div>
+                }
+              /> */}
               <DropdownMenuItem className="text-slate-300 hover:text-white hover:bg-slate-800 cursor-pointer">
                 <Settings className="w-4 h-4 mr-2" />
                 Account Settings
@@ -230,4 +220,3 @@ export function WorkspaceHeader({
     </div>
   );
 }
-
