@@ -11,11 +11,11 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PortfolioChart } from "@/components/portfolio-chart";
+import { AccountPortfolios } from "@/components/account-portfolios";
+import { PersonalActivityFeed } from "@/components/personal-activity-feed";
 // TODO: These components need to be ported from v11.2
 // import { SectorAllocation, PositionAnalysis, CorrelationMatrix, ConcentrationRisk, RiskMetrics } from "@/components/portfolio-analytics";
-// import { EnhancedPortfolioChart } from "@/components/EnhancedPortfolioChart";
-// import { AccountPortfolios } from "@/components/AccountPortfolios";
-// import { PersonalActivityFeed } from "@/components/PersonalActivityFeed";
 // import { InfoPills } from "@/components/InfoPills";
 
 type TimePeriod = "1D" | "1W" | "1M" | "3M" | "6M" | "1Y" | "YTD";
@@ -59,27 +59,18 @@ export default function PortfolioPage() {
       <div className="px-4 sm:px-6 py-4 space-y-6">
         {/* Portfolio Chart */}
         <div data-tour="portfolio-chart">
-          {/* TODO: Add EnhancedPortfolioChart component */}
-          <Card className="border-slate-700/50 bg-slate-800/30 p-6">
-            <p className="text-slate-400">Portfolio Chart - Component needs to be ported</p>
-          </Card>
+          <PortfolioChart selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} mode="solo" />
         </div>
 
         {/* Account Portfolios */}
         <div data-tour="account-portfolios">
-          {/* TODO: Add AccountPortfolios component */}
-          <Card className="border-slate-700/50 bg-slate-800/30 p-6">
-            <p className="text-slate-400">Account Portfolios - Component needs to be ported</p>
-          </Card>
+          <AccountPortfolios selectedPeriod={selectedPeriod} />
         </div>
 
         {/* Personal Activity Feed - Consolidated from all squads + personal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-3">
-            {/* TODO: Add PersonalActivityFeed component */}
-            <Card className="border-slate-700/50 bg-slate-800/30 p-6">
-              <p className="text-slate-400">Personal Activity Feed - Component needs to be ported</p>
-            </Card>
+            <PersonalActivityFeed />
           </div>
         </div>
 

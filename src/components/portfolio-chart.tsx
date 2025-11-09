@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,8 +41,10 @@ import {
   EyeOff,
   Percent,
   DollarSign,
-  Maximize2
+  Maximize2,
+  Briefcase
 } from "lucide-react";
+import { useWorkspaceContext } from "@/lib/use-workspace-context";
 
 type TimePeriod = "1D" | "1W" | "1M" | "3M" | "6M" | "1Y" | "YTD";
 type ViewMode = "combined" | "individual";
@@ -50,6 +53,7 @@ type ChartMode = "absolute" | "percentage";
 interface PortfolioChartProps {
   selectedPeriod: TimePeriod;
   onPeriodChange: (period: TimePeriod) => void;
+  mode?: "solo" | "squad"; // Optional prop to override context detection
 }
 
 interface MemberData {
@@ -60,26 +64,44 @@ interface MemberData {
   initial: string;
   visible: boolean;
   isYou?: boolean;
+  isPrimary?: boolean; // For accounts
+  accountType?: "brokerage" | "retirement"; // For accounts
 }
 
-export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChartProps) {
+export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: PortfolioChartProps) {
+  const { currentContext } = useWorkspaceContext();
+  const isSoloMode = mode === "solo" || (mode === undefined && currentContext.type === "solo");
+  
   const periods: TimePeriod[] = ["1D", "1W", "1M", "3M", "6M", "1Y", "YTD"];
   const [lastSyncTime, setLastSyncTime] = useState<number>(2);
   const [isSyncing, setIsSyncing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("combined");
   const [chartMode, setChartMode] = useState<ChartMode>("absolute");
   
-  // Member data with visibility toggle - All 8 members from Team Omega
-  const [members, setMembers] = useState<MemberData[]>([
-    { id: "mike", name: "Mike", username: "MoonShotKing", color: "#f97316", initial: "M", visible: true },
-    { id: "you", name: "Zach", username: "FlippinPsycho98", color: "#10b981", initial: "Z", visible: true, isYou: true },
-    { id: "jamb", name: "JAMB", username: "ChartMaster420", color: "#06b6d4", initial: "J", visible: true },
-    { id: "sarah", name: "Sarah", username: "TechQueenGG", color: "#a855f7", initial: "S", visible: true },
-    { id: "alex", name: "Alex", username: "DayTradeDemon", color: "#ef4444", initial: "A", visible: true },
-    { id: "jordan", name: "Jordan", username: "DiviKingdom", color: "#6366f1", initial: "J", visible: true },
-    { id: "chris", name: "Chris", username: "CryptoMoonBoi", color: "#eab308", initial: "C", visible: true },
-    { id: "taylor", name: "Taylor", username: "ThetaGangPro", color: "#14b8a6", initial: "T", visible: true },
-  ]);
+  // Squad mode: Member data with visibility toggle - All 8 members from Team Omega
+  // Solo mode: Account data with visibility toggle - Individual brokerage/retirement accounts
+  const [members, setMembers] = useState<MemberData[]>(() => {
+    if (isSoloMode) {
+      // Solo mode: Track individual brokerage/retirement accounts
+      return [
+        { id: "robinhood", name: "Robinhood", username: "Growth Portfolio", color: "#00c805", initial: "R", visible: true, isPrimary: true, accountType: "brokerage" },
+        { id: "fidelity", name: "Fidelity", username: "Retirement Account", color: "#00754a", initial: "F", visible: true, accountType: "retirement" },
+        { id: "tdameritrade", name: "TD Ameritrade", username: "Active Trading", color: "#00a651", initial: "T", visible: true, accountType: "brokerage" },
+      ];
+    } else {
+      // Squad mode: Track team members
+      return [
+        { id: "mike", name: "Mike", username: "MoonShotKing", color: "#f97316", initial: "M", visible: true },
+        { id: "you", name: "Zach", username: "FlippinPsycho98", color: "#10b981", initial: "Z", visible: true, isYou: true },
+        { id: "jamb", name: "JAMB", username: "ChartMaster420", color: "#06b6d4", initial: "J", visible: true },
+        { id: "sarah", name: "Sarah", username: "TechQueenGG", color: "#a855f7", initial: "S", visible: true },
+        { id: "alex", name: "Alex", username: "DayTradeDemon", color: "#ef4444", initial: "A", visible: true },
+        { id: "jordan", name: "Jordan", username: "DiviKingdom", color: "#6366f1", initial: "J", visible: true },
+        { id: "chris", name: "Chris", username: "CryptoMoonBoi", color: "#eab308", initial: "C", visible: true },
+        { id: "taylor", name: "Taylor", username: "ThetaGangPro", color: "#14b8a6", initial: "T", visible: true },
+      ];
+    }
+  });
   
   // Simulate time passing
   useEffect(() => {
@@ -119,8 +141,12 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
     const points = dataPoints[period];
     const data = [];
     
-    // Base values for each member (starting portfolio value)
-    const baseValues: { [key: string]: number } = {
+    // Base values - different for solo (accounts) vs squad (members)
+    const baseValues: { [key: string]: number } = isSoloMode ? {
+      robinhood: 45000,
+      fidelity: 32000,
+      tdameritrade: 22000,
+    } : {
       mike: 70000,
       you: 52000,
       jamb: 40000,
@@ -131,8 +157,12 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
       taylor: 14000,
     };
     
-    // Current values for each member (ending portfolio value)
-    const currentValues: { [key: string]: number } = {
+    // Current values - different for solo (accounts) vs squad (members)
+    const currentValues: { [key: string]: number } = isSoloMode ? {
+      robinhood: 56250,
+      fidelity: 38450,
+      tdameritrade: 25570,
+    } : {
       mike: 92450,
       you: 75270,
       jamb: 43200,
@@ -149,40 +179,56 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
     for (let i = 0; i < points; i++) {
       const progress = i / (points - 1);
       
-      // Generate individual member values with unique patterns
+      // Generate individual values with unique patterns
       const memberValues: { [key: string]: number } = {};
       
-      memberValues.mike = baseValues.mike + 
-        (currentValues.mike - baseValues.mike) * progress + 
-        Math.sin(i * 0.3) * 5000 + Math.random() * 3000;
-      
-      memberValues.you = baseValues.you + 
-        (currentValues.you - baseValues.you) * progress + 
-        Math.sin(i * 0.35 + 2) * 3500 + Math.random() * 2000;
-      
-      memberValues.jamb = baseValues.jamb + 
-        (currentValues.jamb - baseValues.jamb) * progress + 
-        Math.sin(i * 0.25 + 1) * 2000 + Math.random() * 1500;
-      
-      memberValues.sarah = baseValues.sarah + 
-        (currentValues.sarah - baseValues.sarah) * progress + 
-        Math.sin(i * 0.4 + 3) * 2500 + Math.random() * 1800;
-      
-      memberValues.alex = baseValues.alex + 
-        (currentValues.alex - baseValues.alex) * progress + 
-        Math.sin(i * 0.45 + 4) * 1800 + Math.random() * 1200;
-      
-      memberValues.jordan = baseValues.jordan + 
-        (currentValues.jordan - baseValues.jordan) * progress + 
-        Math.sin(i * 0.28 + 5) * 1500 + Math.random() * 1000;
-      
-      memberValues.chris = baseValues.chris + 
-        (currentValues.chris - baseValues.chris) * progress + 
-        Math.sin(i * 0.5 + 6) * 1200 + Math.random() * 800;
-      
-      memberValues.taylor = baseValues.taylor + 
-        (currentValues.taylor - baseValues.taylor) * progress + 
-        Math.sin(i * 0.32 + 7) * 1000 + Math.random() * 600;
+      if (isSoloMode) {
+        // Solo mode: Generate account values
+        memberValues.robinhood = baseValues.robinhood + 
+          (currentValues.robinhood - baseValues.robinhood) * progress + 
+          Math.sin(i * 0.3) * 3000 + Math.random() * 2000;
+        
+        memberValues.fidelity = baseValues.fidelity + 
+          (currentValues.fidelity - baseValues.fidelity) * progress + 
+          Math.sin(i * 0.25 + 1) * 2000 + Math.random() * 1500;
+        
+        memberValues.tdameritrade = baseValues.tdameritrade + 
+          (currentValues.tdameritrade - baseValues.tdameritrade) * progress + 
+          Math.sin(i * 0.35 + 2) * 1500 + Math.random() * 1000;
+      } else {
+        // Squad mode: Generate member values
+        memberValues.mike = baseValues.mike + 
+          (currentValues.mike - baseValues.mike) * progress + 
+          Math.sin(i * 0.3) * 5000 + Math.random() * 3000;
+        
+        memberValues.you = baseValues.you + 
+          (currentValues.you - baseValues.you) * progress + 
+          Math.sin(i * 0.35 + 2) * 3500 + Math.random() * 2000;
+        
+        memberValues.jamb = baseValues.jamb + 
+          (currentValues.jamb - baseValues.jamb) * progress + 
+          Math.sin(i * 0.25 + 1) * 2000 + Math.random() * 1500;
+        
+        memberValues.sarah = baseValues.sarah + 
+          (currentValues.sarah - baseValues.sarah) * progress + 
+          Math.sin(i * 0.4 + 3) * 2500 + Math.random() * 1800;
+        
+        memberValues.alex = baseValues.alex + 
+          (currentValues.alex - baseValues.alex) * progress + 
+          Math.sin(i * 0.45 + 4) * 1800 + Math.random() * 1200;
+        
+        memberValues.jordan = baseValues.jordan + 
+          (currentValues.jordan - baseValues.jordan) * progress + 
+          Math.sin(i * 0.28 + 5) * 1500 + Math.random() * 1000;
+        
+        memberValues.chris = baseValues.chris + 
+          (currentValues.chris - baseValues.chris) * progress + 
+          Math.sin(i * 0.5 + 6) * 1200 + Math.random() * 800;
+        
+        memberValues.taylor = baseValues.taylor + 
+          (currentValues.taylor - baseValues.taylor) * progress + 
+          Math.sin(i * 0.32 + 7) * 1000 + Math.random() * 600;
+      }
       
       const combinedValue = Object.values(memberValues).reduce((a, b) => a + b, 0);
 
@@ -214,35 +260,31 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
       
       const combinedPercent = ((combinedValue - totalBase) / totalBase) * 100;
 
-      data.push({
+      // Build data object dynamically based on mode
+      const dataPoint: any = {
         date: label,
         combined: Math.round(combinedValue),
-        mike: Math.round(memberValues.mike),
-        you: Math.round(memberValues.you),
-        jamb: Math.round(memberValues.jamb),
-        sarah: Math.round(memberValues.sarah),
-        alex: Math.round(memberValues.alex),
-        jordan: Math.round(memberValues.jordan),
-        chris: Math.round(memberValues.chris),
-        taylor: Math.round(memberValues.taylor),
         combinedPercent: parseFloat(combinedPercent.toFixed(2)),
-        mikePercent: parseFloat(memberPercents.mikePercent.toFixed(2)),
-        youPercent: parseFloat(memberPercents.youPercent.toFixed(2)),
-        jambPercent: parseFloat(memberPercents.jambPercent.toFixed(2)),
-        sarahPercent: parseFloat(memberPercents.sarahPercent.toFixed(2)),
-        alexPercent: parseFloat(memberPercents.alexPercent.toFixed(2)),
-        jordanPercent: parseFloat(memberPercents.jordanPercent.toFixed(2)),
-        chrisPercent: parseFloat(memberPercents.chrisPercent.toFixed(2)),
-        taylorPercent: parseFloat(memberPercents.taylorPercent.toFixed(2)),
+      };
+      
+      // Add individual values based on mode
+      Object.keys(memberValues).forEach(key => {
+        dataPoint[key] = Math.round(memberValues[key]);
+        if (memberPercents[`${key}Percent`]) {
+          dataPoint[`${key}Percent`] = parseFloat(memberPercents[`${key}Percent`].toFixed(2));
+        }
       });
+      
+      data.push(dataPoint);
     }
 
     return data;
   };
 
   const data = generateData(selectedPeriod);
-  const currentValue = 210920;
-  const goal = 500000;
+  // Calculate current value from combined data or use default
+  const currentValue = data.length > 0 ? data[data.length - 1].combined : (isSoloMode ? 120270 : 210920);
+  const goal = isSoloMode ? 200000 : 500000;
   const goalProgress = (currentValue / goal) * 100;
   
   // Portfolio returns by period
@@ -393,8 +435,12 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
                 
                 <span className="text-slate-600 hidden md:inline">•</span>
                 
-                {/* Members Status */}
-                <span className="hidden md:inline text-slate-300">{membersGreen} members green</span>
+                {/* Status - Different for solo vs squad */}
+                {isSoloMode ? (
+                  <span className="hidden md:inline text-slate-300">{members.filter(m => m.visible).length} accounts active</span>
+                ) : (
+                  <span className="hidden md:inline text-slate-300">{membersGreen} members green</span>
+                )}
               </div>
               
               {/* Stats Row 2: Milestone Progress */}
@@ -503,8 +549,17 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
                     : "text-slate-400 hover:text-white hover:bg-slate-700/50"
                 }`}
               >
-                <Users className="w-3.5 h-3.5 sm:mr-1.5" />
-                <span className="hidden sm:inline">Combined</span>
+                {isSoloMode ? (
+                  <>
+                    <Briefcase className="w-3.5 h-3.5 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Combined</span>
+                  </>
+                ) : (
+                  <>
+                    <Users className="w-3.5 h-3.5 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Combined</span>
+                  </>
+                )}
               </Button>
               <Button
                 variant="ghost"
@@ -516,8 +571,17 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
                     : "text-slate-400 hover:text-white hover:bg-slate-700/50"
                 }`}
               >
-                <User className="w-3.5 h-3.5 sm:mr-1.5" />
-                <span className="hidden sm:inline">Individual</span>
+                {isSoloMode ? (
+                  <>
+                    <Briefcase className="w-3.5 h-3.5 sm:mr-1.5" />
+                    <span className="hidden sm:inline">By Account</span>
+                  </>
+                ) : (
+                  <>
+                    <User className="w-3.5 h-3.5 sm:mr-1.5" />
+                    <span className="hidden sm:inline">Individual</span>
+                  </>
+                )}
               </Button>
             </div>
 
@@ -552,7 +616,7 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
             </div>
           </div>
 
-          {/* Member Legend (Individual View Only) */}
+          {/* Member/Account Legend (Individual View Only) */}
           {viewMode === "individual" && (
             <div className="flex items-center gap-2 flex-wrap">
               {members.map((member) => (
@@ -570,8 +634,13 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange }: PortfolioChar
                     style={{ backgroundColor: member.color }}
                   />
                   <span className="text-xs text-slate-300">
-                    {member.username}
+                    {isSoloMode ? member.name : member.username}
                   </span>
+                  {isSoloMode && member.accountType && (
+                    <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 border-slate-600 text-slate-400">
+                      {member.accountType === "retirement" ? "401k" : "Brokerage"}
+                    </Badge>
+                  )}
                   {member.visible ? (
                     <Eye className="w-3 h-3 text-slate-400" />
                   ) : (
