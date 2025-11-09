@@ -123,7 +123,7 @@ export function AppSidebar({
   });
 
   return (
-    <div className="h-screen bg-slate-950/95 border-r border-slate-800 flex flex-col w-64 fixed left-0 top-0 z-40 backdrop-blur-sm" data-tour="sidebar">
+    <div className="hidden lg:flex h-screen bg-slate-950/95 border-r border-slate-800 flex-col w-64 fixed left-0 top-0 z-40 backdrop-blur-sm" data-tour="sidebar">
       {/* Logo Header */}
       <div className="p-6 pb-4 border-b border-slate-800">
         <div className="flex items-center gap-3 mb-4">

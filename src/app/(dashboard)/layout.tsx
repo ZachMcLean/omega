@@ -6,6 +6,7 @@ import { AppSidebar, type PageId } from "@/components/app-sidebar";
 import { WorkspaceContext, getDefaultSoloContext, isSoloMode } from "@/lib/workspace-context";
 import { WorkspaceHeader } from "@/components/workspace-header";
 import { WorkspaceProvider } from "@/lib/use-workspace-context";
+import { BottomNavigation } from "@/components/bottom-navigation";
 
 export default function DashboardLayout({
   children,
@@ -183,6 +184,9 @@ export default function DashboardLayout({
           />
           <div className="pb-20 lg:pb-0">{children}</div>
         </main>
+
+        {/* Bottom Navigation - Mobile only */}
+        <BottomNavigation />
       </div>
     </WorkspaceProvider>
   );

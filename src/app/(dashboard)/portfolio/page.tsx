@@ -62,14 +62,15 @@ export default function PortfolioPage() {
           <PortfolioChart selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} mode="solo" />
         </div>
 
-        {/* Account Portfolios */}
-        <div data-tour="account-portfolios">
-          <AccountPortfolios selectedPeriod={selectedPeriod} />
-        </div>
-
-        {/* Personal Activity Feed - Consolidated from all squads + personal */}
+        {/* Two Column Layout: Account Portfolios (2/3) + Activity Feed (1/3) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-3">
+          {/* Account Portfolios - 2/3 width */}
+          <div className="lg:col-span-2" data-tour="account-portfolios">
+            <AccountPortfolios selectedPeriod={selectedPeriod} />
+          </div>
+          
+          {/* Personal Activity Feed Sidebar - 1/3 width */}
+          <div className="lg:col-span-1">
             <PersonalActivityFeed />
           </div>
         </div>

@@ -127,6 +127,12 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
   };
   
   // Generate mock data based on selected period
+  // Use seeded random to ensure consistent values between server and client
+  const seededRandom = (seed: number) => {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  };
+
   const generateData = (period: TimePeriod) => {
     const dataPoints: { [key in TimePeriod]: number } = {
       "1D": 24,
@@ -180,54 +186,56 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
       const progress = i / (points - 1);
       
       // Generate individual values with unique patterns
+      // Use seeded random based on period and index for consistency
+      const seed = period.charCodeAt(0) + period.charCodeAt(1) + i;
       const memberValues: { [key: string]: number } = {};
       
       if (isSoloMode) {
         // Solo mode: Generate account values
         memberValues.robinhood = baseValues.robinhood + 
           (currentValues.robinhood - baseValues.robinhood) * progress + 
-          Math.sin(i * 0.3) * 3000 + Math.random() * 2000;
+          Math.sin(i * 0.3) * 3000 + seededRandom(seed + 1) * 2000;
         
         memberValues.fidelity = baseValues.fidelity + 
           (currentValues.fidelity - baseValues.fidelity) * progress + 
-          Math.sin(i * 0.25 + 1) * 2000 + Math.random() * 1500;
+          Math.sin(i * 0.25 + 1) * 2000 + seededRandom(seed + 2) * 1500;
         
         memberValues.tdameritrade = baseValues.tdameritrade + 
           (currentValues.tdameritrade - baseValues.tdameritrade) * progress + 
-          Math.sin(i * 0.35 + 2) * 1500 + Math.random() * 1000;
+          Math.sin(i * 0.35 + 2) * 1500 + seededRandom(seed + 3) * 1000;
       } else {
         // Squad mode: Generate member values
         memberValues.mike = baseValues.mike + 
           (currentValues.mike - baseValues.mike) * progress + 
-          Math.sin(i * 0.3) * 5000 + Math.random() * 3000;
+          Math.sin(i * 0.3) * 5000 + seededRandom(seed + 1) * 3000;
         
         memberValues.you = baseValues.you + 
           (currentValues.you - baseValues.you) * progress + 
-          Math.sin(i * 0.35 + 2) * 3500 + Math.random() * 2000;
+          Math.sin(i * 0.35 + 2) * 3500 + seededRandom(seed + 2) * 2000;
         
         memberValues.jamb = baseValues.jamb + 
           (currentValues.jamb - baseValues.jamb) * progress + 
-          Math.sin(i * 0.25 + 1) * 2000 + Math.random() * 1500;
+          Math.sin(i * 0.25 + 1) * 2000 + seededRandom(seed + 3) * 1500;
         
         memberValues.sarah = baseValues.sarah + 
           (currentValues.sarah - baseValues.sarah) * progress + 
-          Math.sin(i * 0.4 + 3) * 2500 + Math.random() * 1800;
+          Math.sin(i * 0.4 + 3) * 2500 + seededRandom(seed + 4) * 1800;
         
         memberValues.alex = baseValues.alex + 
           (currentValues.alex - baseValues.alex) * progress + 
-          Math.sin(i * 0.45 + 4) * 1800 + Math.random() * 1200;
+          Math.sin(i * 0.45 + 4) * 1800 + seededRandom(seed + 5) * 1200;
         
         memberValues.jordan = baseValues.jordan + 
           (currentValues.jordan - baseValues.jordan) * progress + 
-          Math.sin(i * 0.28 + 5) * 1500 + Math.random() * 1000;
+          Math.sin(i * 0.28 + 5) * 1500 + seededRandom(seed + 6) * 1000;
         
         memberValues.chris = baseValues.chris + 
           (currentValues.chris - baseValues.chris) * progress + 
-          Math.sin(i * 0.5 + 6) * 1200 + Math.random() * 800;
+          Math.sin(i * 0.5 + 6) * 1200 + seededRandom(seed + 7) * 800;
         
         memberValues.taylor = baseValues.taylor + 
           (currentValues.taylor - baseValues.taylor) * progress + 
-          Math.sin(i * 0.32 + 7) * 1000 + Math.random() * 600;
+          Math.sin(i * 0.32 + 7) * 1000 + seededRandom(seed + 8) * 600;
       }
       
       const combinedValue = Object.values(memberValues).reduce((a, b) => a + b, 0);
