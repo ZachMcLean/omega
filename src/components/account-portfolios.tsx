@@ -8,7 +8,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, Building2, Crown, Target, BarChart3, TrendingUp, Flame, DollarSign, Activity, Zap, Shield, AlertTriangle, Grid3x3, List, Plus, Search, Link2, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Building2, Crown, Target, BarChart3, TrendingUp, TrendingDown, DollarSign, Activity, Zap, Shield, AlertTriangle, Grid3x3, List, Plus, Search, Link2, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import type { TimePeriod } from "@/lib/workspace-context";
+import { usePortfolioAccounts, useSyncPortfolio } from "@/hooks/use-portfolio";
 
 interface AccountPortfoliosProps {
   selectedPeriod: TimePeriod;
@@ -67,11 +68,120 @@ interface BrokerageAccount {
 }
 
 export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
-  const [expandedAccount, setExpandedAccount] = useState<number | null>(null);
+  const [expandedAccount, setExpandedAccount] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("value");
 
+  // ✅ Fetch real data with TanStack Query
+  const { data, isLoading, error, refetch } = usePortfolioAccounts();
+  const syncMutation = useSyncPortfolio();
+
+  const handleSync = async () => {
+    try {
+      await syncMutation.mutateAsync("quick");
+      // Data automatically refetches after sync!
+    } catch (error) {
+      console.error("Sync failed:", error);
+    }
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Card className="border-slate-700/50 bg-slate-800/40 p-6">
+        <p className="text-slate-400">Loading accounts...</p>
+      </Card>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <Card className="border-slate-700/50 bg-slate-800/40 p-6">
+        <div className="space-y-4">
+          <p className="text-red-400">Error loading accounts: {error.message}</p>
+          <Button onClick={() => refetch()} variant="outline">
+            Retry
+          </Button>
+        </div>
+      </Card>
+    );
+  }
+
+  // Transform API data to match component's expected format
+  const apiAccounts = data?.accounts || [];
+  
+  if (apiAccounts.length === 0) {
+    return (
+      <Card className="border-slate-700/50 bg-slate-800/40 p-6">
+        <p className="text-slate-400 mb-4">No accounts connected yet.</p>
+        <Button onClick={() => window.location.href = "/start"}>
+          Connect Your First Account
+        </Button>
+      </Card>
+    );
+  }
+
+  // Map API accounts to component format (keeping existing UI structure)
+  const accounts: (BrokerageAccount & { id?: string })[] = apiAccounts.map((acc: typeof apiAccounts[0], index: number) => {
+    // Calculate diversification score based on position distribution
+    const positionValues = acc.positions.map((p: typeof acc.positions[0]) => p.marketValue);
+    const totalPositionValue = positionValues.reduce((sum: number, val: number) => sum + val, 0);
+    const concentrations = positionValues.map((val: number) => totalPositionValue > 0 ? val / totalPositionValue : 0);
+    const maxConcentration = Math.max(...concentrations, 0);
+    const diversificationScore = totalPositionValue > 0 ? Math.round((1 - maxConcentration) * 100) : 0;
+    
+    // Calculate account health (based on diversification and cash ratio)
+    const cashRatio = acc.totalValue > 0 ? acc.totalCash / acc.totalValue : 0;
+    const accountHealth = Math.round((diversificationScore * 0.6) + (Math.min(cashRatio, 0.3) * 100 * 0.4));
+    
+    // Determine risk level based on portfolio concentration
+    let riskLevel = "Moderate";
+    if (maxConcentration > 0.5) riskLevel = "Aggressive";
+    else if (maxConcentration < 0.25 && diversificationScore > 70) riskLevel = "Conservative";
+    
+    return {
+      id: acc.id, // Store API ID for expansion tracking
+      rank: index + 1,
+      broker: acc.broker,
+      accountName: acc.accountName || acc.accountType || "Account",
+      accountNumber: acc.accountNumber || "****",
+      portfolioValue: acc.totalValue,
+      change: acc.dailyPL || 0, // ✨ Use daily P&L instead of total
+      changePercent: acc.dailyPLPercent || 0, // ✨ Use daily P&L % instead of total
+      color: acc.broker === "ROBINHOOD" ? "#00c805" : acc.broker === "FIDELITY" ? "#00754a" : "#00a651",
+      icon: acc.broker === "ROBINHOOD" ? "🎯" : acc.broker === "FIDELITY" ? "🏦" : "⚡",
+      isConnected: acc.status === "active",
+      isPrimary: index === 0,
+      details: {
+        buyingPower: acc.buyingPower || 0,
+        cash: acc.totalCash,
+        ytdPL: acc.totalPL, // Keep total P&L for detailed view
+        ytdPLPercent: acc.totalPLPercent, // Keep total P&L % for detailed view
+        dayTrades: "0/3", // TODO: Add this to API
+        accountType: acc.accountType || "Cash",
+        marginAvailable: 0, // TODO: Add this to API
+        marginMaintenance: 0, // TODO: Add this to API
+        marginUsed: 0, // TODO: Add this to API
+        accountHealth: accountHealth,
+        lastSync: acc.lastSyncedAt ? `${Math.floor((Date.now() - new Date(acc.lastSyncedAt).getTime()) / 60000)}m ago` : "Never",
+        topHolding: acc.positions[0]?.symbol || "N/A",
+        diversificationScore: diversificationScore,
+        riskLevel: riskLevel,
+        positions: acc.positions.map((pos: typeof acc.positions[0]) => ({
+          symbol: pos.symbol,
+          shares: pos.quantity,
+          value: pos.marketValue,
+          change: pos.unrealizedPL || 0,
+          changePercent: pos.unrealizedPLPercent || 0,
+        })),
+      },
+    };
+  });
+
+  // Old mock data removed - now using real data from API
+  /*
   const accounts: BrokerageAccount[] = [
     {
       rank: 1,
@@ -175,13 +285,14 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
       },
     },
   ];
+  */
 
-  const totalValue = accounts.reduce((sum, acc) => sum + acc.portfolioValue, 0);
-  const totalChange = accounts.reduce((sum, acc) => sum + acc.change, 0);
+  const totalValue = accounts.reduce((sum: number, acc) => sum + acc.portfolioValue, 0);
+  const totalChange = accounts.reduce((sum: number, acc) => sum + acc.change, 0);
   const totalChangePercent = (totalChange / (totalValue - totalChange)) * 100;
 
   const filteredAccounts = accounts
-    .filter(acc => 
+    .filter((acc) => 
       acc.broker.toLowerCase().includes(searchQuery.toLowerCase()) ||
       acc.accountName.toLowerCase().includes(searchQuery.toLowerCase())
     )
@@ -218,12 +329,21 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                 {accounts.filter(a => a.isConnected).length} Connected
               </Badge>
             </div>
-            <p className="text-sm text-slate-400">
-              Combined: <span className="text-white font-mono">${totalValue.toLocaleString()}</span>
-              <span className={`ml-2 ${totalChangePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {totalChangePercent >= 0 ? '+' : ''}{totalChangePercent.toFixed(2)}%
-              </span>
-            </p>
+            <div className="flex items-center gap-3 flex-wrap text-sm">
+              <div>
+                <span className="text-slate-400">Combined: </span>
+                <span className="text-white font-mono font-semibold">${totalValue.toLocaleString()}</span>
+              </div>
+              <div className={`flex items-center gap-1.5 ${totalChangePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {totalChangePercent >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                <span className="font-semibold font-mono">
+                  {totalChangePercent >= 0 ? '+' : ''}{totalChangePercent.toFixed(2)}%
+                </span>
+                <span className="text-slate-500 font-normal">
+                  ({totalChange >= 0 ? '+' : ''}${Math.abs(totalChange).toLocaleString('en-US', { maximumFractionDigits: 2 })})
+                </span>
+              </div>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -238,8 +358,10 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
               size="sm"
               variant="ghost"
               className="text-cyan-400 hover:bg-cyan-500/10"
+              onClick={handleSync}
+              disabled={syncMutation.isPending}
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className={`w-4 h-4 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
             </Button>
           </div>
         </div>
@@ -290,7 +412,8 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
         {/* Accounts List */}
         <div className="space-y-3">
           {filteredAccounts.map((account) => {
-            const isExpanded = expandedAccount === account.rank;
+            const accountId = (account as BrokerageAccount & { id?: string }).id || account.rank.toString();
+            const isExpanded = expandedAccount === accountId;
             const healthColors = getHealthColor(account.details.accountHealth);
 
             return (
@@ -301,7 +424,7 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                 {/* Account Summary Row */}
                 <div
                   className="p-4 cursor-pointer"
-                  onClick={() => setExpandedAccount(isExpanded ? null : account.rank)}
+                  onClick={() => setExpandedAccount(isExpanded ? null : accountId)}
                 >
                   <div className="flex items-center justify-between gap-4">
                     {/* Left: Broker Info */}
@@ -329,20 +452,27 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                     </div>
 
                     {/* Center: Value & Performance */}
-                    <div className="hidden sm:flex flex-col items-end gap-0.5">
-                      <span className="text-white font-mono tabular-nums">
+                    <div className="hidden sm:flex flex-col items-end gap-1">
+                      <span className="text-white font-mono tabular-nums text-lg">
                         ${account.portfolioValue.toLocaleString()}
                       </span>
-                      <div className={`flex items-center gap-1 text-sm ${account.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {account.changePercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <Flame className="w-3 h-3" />}
-                        <span className="font-mono tabular-nums">
+                      <div className={`flex items-center gap-1.5 ${account.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {account.changePercent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                        <span className="font-semibold font-mono tabular-nums">
                           {account.changePercent >= 0 ? '+' : ''}{account.changePercent.toFixed(2)}%
                         </span>
                       </div>
+                      <span className="text-xs text-slate-500">
+                        {account.change >= 0 ? '+' : ''}${Math.abs(account.change).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                      </span>
                     </div>
 
                     {/* Right: Quick Stats */}
                     <div className="hidden md:flex items-center gap-3">
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-500/10 border border-purple-500/20 rounded text-xs text-purple-400">
+                        <Target className="w-3 h-3" />
+                        <span>{account.details.topHolding}</span>
+                      </div>
                       <div className={`flex items-center gap-2 px-2 py-1 rounded-lg border text-xs ${healthColors.bg} ${healthColors.border} ${healthColors.text}`}>
                         <Activity className="w-3 h-3" />
                         <span>{account.details.accountHealth}</span>
@@ -359,12 +489,17 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
 
                   {/* Mobile: Value & Performance */}
                   <div className="flex sm:hidden items-center justify-between mt-3 pt-3 border-t border-slate-700/50">
-                    <span className="text-white font-mono">
-                      ${account.portfolioValue.toLocaleString()}
-                    </span>
-                    <div className={`flex items-center gap-1 text-sm ${account.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      {account.changePercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <Flame className="w-3 h-3" />}
-                      <span className="font-mono">
+                    <div>
+                      <span className="text-white font-mono text-base">
+                        ${account.portfolioValue.toLocaleString()}
+                      </span>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        {account.change >= 0 ? '+' : ''}${Math.abs(account.change).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                    <div className={`flex items-center gap-1.5 ${account.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {account.changePercent >= 0 ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                      <span className="font-semibold font-mono text-base">
                         {account.changePercent >= 0 ? '+' : ''}{account.changePercent.toFixed(2)}%
                       </span>
                     </div>
@@ -374,6 +509,43 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                 {/* Expanded Details */}
                 {isExpanded && (
                   <div className="border-t border-slate-700/50 bg-slate-900/50 p-4 space-y-6">
+                    {/* Performance Summary Banner */}
+                    <div className="p-4 rounded-lg bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Total Value</p>
+                          <p className="text-lg font-mono text-white">${account.portfolioValue.toLocaleString()}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Today's Change</p>
+                          <div className={account.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                            <p className="text-lg font-mono font-semibold">
+                              {account.changePercent >= 0 ? '+' : ''}{account.changePercent.toFixed(2)}%
+                            </p>
+                            <p className="text-xs opacity-75">
+                              {account.change >= 0 ? '+' : ''}${Math.abs(account.change).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Total P&L</p>
+                          <div className={account.details.ytdPL >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                            <p className="text-lg font-mono font-semibold">
+                              {account.details.ytdPLPercent >= 0 ? '+' : ''}{account.details.ytdPLPercent.toFixed(2)}%
+                            </p>
+                            <p className="text-xs opacity-75">
+                              {account.details.ytdPL >= 0 ? '+' : ''}${Math.abs(account.details.ytdPL).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-400 mb-1">Positions</p>
+                          <p className="text-lg font-mono text-white">{account.details.positions.length}</p>
+                          <p className="text-xs text-cyan-400">{account.details.topHolding} leading</p>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Account Stats Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div className="space-y-1">
@@ -385,14 +557,12 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                         <p className="text-white font-mono">${account.details.cash.toLocaleString()}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-slate-400">YTD P&L</p>
-                        <p className={`font-mono ${account.details.ytdPL >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {account.details.ytdPL >= 0 ? '+' : ''}${Math.abs(account.details.ytdPL).toLocaleString()}
-                        </p>
+                        <p className="text-xs text-slate-400">Account Type</p>
+                        <p className="text-white">{account.details.accountType}</p>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-xs text-slate-400">Day Trades</p>
-                        <p className="text-white font-mono">{account.details.dayTrades}</p>
+                        <p className="text-xs text-slate-400">Last Sync</p>
+                        <p className="text-white">{account.details.lastSync}</p>
                       </div>
                     </div>
 
@@ -513,43 +683,75 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                     {/* Position Analysis */}
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <h4 className="text-sm text-slate-300">Holdings Analysis</h4>
-                        <p className="text-xs text-slate-500">Last sync: {account.details.lastSync}</p>
+                        <div className="flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4 text-cyan-400" />
+                          <h4 className="text-sm font-semibold text-slate-300">Holdings ({account.details.positions.length})</h4>
+                        </div>
+                        <Badge variant="outline" className="border-slate-600 text-slate-400 text-xs">
+                          Updated {account.details.lastSync}
+                        </Badge>
                       </div>
                       
-                      {/* Positions Table */}
-                      <div className="border border-slate-700/50 rounded-lg overflow-hidden">
-                        <table className="w-full">
-                          <thead className="bg-slate-800/50">
-                            <tr>
-                              <th className="text-left p-3 text-xs text-slate-400">Symbol</th>
-                              <th className="text-right p-3 text-xs text-slate-400">Shares</th>
-                              <th className="text-right p-3 text-xs text-slate-400 hidden sm:table-cell">Value</th>
-                              <th className="text-right p-3 text-xs text-slate-400">Change</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {account.details.positions.map((position) => (
-                              <tr key={position.symbol} className="border-t border-slate-800/50 hover:bg-slate-800/30 transition-colors">
-                                <td className="p-3">
-                                  <span className="font-mono text-slate-200 text-sm">{position.symbol}</span>
-                                </td>
-                                <td className="p-3 text-right">
-                                  <span className="font-mono text-slate-300 text-sm">{position.shares}</span>
-                                </td>
-                                <td className="p-3 text-right hidden sm:table-cell">
-                                  <span className="font-mono text-white text-sm">${position.value.toLocaleString()}</span>
-                                </td>
-                                <td className="p-3 text-right">
-                                  <span className={`font-mono text-sm ${position.changePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                                    {position.changePercent >= 0 ? '+' : ''}{position.changePercent.toFixed(2)}%
-                                  </span>
-                                </td>
+                      {account.details.positions.length > 0 ? (
+                        /* Positions Table */
+                        <div className="border border-slate-700/50 rounded-lg overflow-hidden">
+                          <table className="w-full">
+                            <thead className="bg-slate-800/50">
+                              <tr>
+                                <th className="text-left p-3 text-xs font-semibold text-slate-400 uppercase">Position</th>
+                                <th className="text-right p-3 text-xs font-semibold text-slate-400 uppercase">Qty</th>
+                                <th className="text-right p-3 text-xs font-semibold text-slate-400 uppercase hidden sm:table-cell">Value</th>
+                                <th className="text-right p-3 text-xs font-semibold text-slate-400 uppercase hidden md:table-cell">P&L</th>
+                                <th className="text-right p-3 text-xs font-semibold text-slate-400 uppercase">Return</th>
                               </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
+                            </thead>
+                            <tbody>
+                              {account.details.positions.map((position, idx) => (
+                                <tr 
+                                  key={position.symbol} 
+                                  className={`border-t border-slate-800/50 hover:bg-slate-800/30 transition-colors ${idx === 0 ? 'bg-cyan-500/5' : ''}`}
+                                >
+                                  <td className="p-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center">
+                                        <span className="text-xs font-bold text-cyan-400">{position.symbol.substring(0, 2)}</span>
+                                      </div>
+                                      <div>
+                                        <p className="font-mono font-semibold text-slate-200 text-sm">{position.symbol}</p>
+                                        {idx === 0 && <p className="text-xs text-cyan-400">Top holding</p>}
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="p-3 text-right">
+                                    <span className="font-mono text-slate-300 text-sm">{position.shares.toLocaleString()}</span>
+                                  </td>
+                                  <td className="p-3 text-right hidden sm:table-cell">
+                                    <span className="font-mono text-white font-semibold text-sm">${position.value.toLocaleString()}</span>
+                                  </td>
+                                  <td className="p-3 text-right hidden md:table-cell">
+                                    <span className={`font-mono text-sm ${position.change >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                      {position.change >= 0 ? '+' : ''}${Math.abs(position.change).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                                    </span>
+                                  </td>
+                                  <td className="p-3 text-right">
+                                    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded ${position.changePercent >= 0 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-red-500/15 text-red-400'}`}>
+                                      {position.changePercent >= 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                      <span className="font-mono text-xs font-semibold">
+                                        {position.changePercent >= 0 ? '+' : ''}{position.changePercent.toFixed(2)}%
+                                      </span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <div className="border border-slate-700/50 rounded-lg p-6 text-center">
+                          <BarChart3 className="w-12 h-12 text-slate-600 mx-auto mb-2" />
+                          <p className="text-slate-400 text-sm">No positions in this account</p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Performance Metrics */}

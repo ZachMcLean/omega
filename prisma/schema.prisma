@@ -8,65 +8,81 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// This is for later when we have workspaces
+model Workspace {
+  id        String           @id @default(cuid())
+  name      String
+  createdAt DateTime         @default(now())
+  members   WorkspaceMember[]
+}
+
+model WorkspaceMember {
+  id          String         @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        WorkspaceRole  @default(MEMBER)
+
+  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
+  user        User           @relation(fields: [userId], references: [id])
+
+  @@unique([workspaceId, userId])
+}
+
+enum WorkspaceRole {
+    MEMBER
+    ADMIN
+    OWNER
+}
+
 enum Role {
   MEMBER
   ADMIN
   SUPERUSER
 }
 
-model User {
-  id                  String         @id @default(cuid())
-  email               String         @unique
-  name                String?
-  image               String?        // Url to avatar image
+// ----------------------------------------
 
-  username            String?        @unique
-  emailVerified       Boolean        @default(false)
-  role                Role           @default(MEMBER)
-  onboardingComplete  Boolean        @default(false)
+model User {
+  id                  String                  @id @default(cuid())
+  email               String                  @unique
+  name                String?
+  image               String?                 // Url to avatar image
+
+  username            String?                 @unique
+  emailVerified       Boolean                 @default(false)
+  role                Role                    @default(MEMBER)
+  onboardingComplete  Boolean                 @default(false)
   settings            Json?
 
   snaptrade           SnaptradeUser?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
 
   accounts            Account[]
   sessions            Session[]
   workspaces          WorkspaceMember[]
 }
 
-model SnaptradeUser {
-  id                String   @id @default(cuid())
-  userId            String   @unique
-  snaptradeUserId   String   @unique // what you send to SnapTrade (we'll use User.id)
-  userSecret        String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  user              User     @relation(fields: [userId], references: [id])
-}
-
-// Optional: later you can track linked accounts / status
-model BrokerageConnection {
-  id                String   @id @default(cuid())
-  snaptradeUserId   String
-  broker            String
-  status            String   @default("pending")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-}
-
+/* Better Auth expects these names
+// Better Auth's Prisma adapter expects:
+// ----------------------------------------
+// Table: session → Model: Session
+// Table: account → Model: Account
+// Table: user → Model: User
+// Table: verification → Model: VerificationToken
+// ----------------------------------------
+*/
 model Session {
-  id         String   @id @default(cuid())
-  token      String   @unique           // was sessionToken
-  userId     String
-  expiresAt  DateTime                    // was expires
-  ipAddress  String?                     // add
-  userAgent  String?                     // add
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  token                 String   @unique           // was sessionToken
+  userId                String
+  expiresAt             DateTime                    // was expires
+  ipAddress             String?                     // add
+  userAgent             String?                     // add
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -90,6 +106,7 @@ model Account {
   @@unique([providerId, accountId])
 }
 
+// this is for email verification on User signup
 model VerificationToken {
   identifier String
   token      String   @unique
@@ -100,28 +117,174 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// THis is for later when we have workspaces
-enum WorkspaceRole {
-    MEMBER
-    ADMIN
-    OWNER
+model SnaptradeUser {
+  id                    String                  @id @default(cuid())
+  userId                String                  @unique
+  snaptradeUserId       String                  @unique // what you send to SnapTrade (we'll use User.id)
+  userSecret            String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  user                  User                    @relation(fields: [userId], references: [id])
+  brokerageConnections  BrokerageConnection[]
 }
 
-model Workspace {
-  id        String           @id @default(cuid())
-  name      String
-  createdAt DateTime         @default(now())
-  members   WorkspaceMember[]
+// Track each brokerage connection and status
+model BrokerageConnection {
+  id                    String                  @id @default(cuid())
+  snaptradeUserId       String
+  authorizationId       String                  @unique // SnapTrade Authorization ID
+  broker                String                  // "ROBINHOOD", "FIDELITY", "TD_AMERITRADE", "E_TRADE", "WEBULL", "MORGAN_STANLEY", "ALLY", "VANGUARD", "SCHWAB", etc
+  brokerName            String?                 // Display name 
+  status                String                  @default("pending") // "pending", "active", "disconnected", "error"
+  lastSyncedAt          DateTime?
+  syncError             String?
+  metadata              Json?                   // Store extra broker metadata
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+
+  snaptradeUser         SnaptradeUser           @relation(fields: [snaptradeUserId], references: [id], onDelete:Cascade)
+  brokerageAccounts     BrokerageAccount[]
 }
 
-model WorkspaceMember {
-  id          String         @id @default(cuid())
-  workspaceId String
-  userId      String
-  role        WorkspaceRole  @default(MEMBER)
+// Individual brokerage accounts (a connection can have multiple accounts)
+model BrokerageAccount {
+  id                    String                  @id @default(cuid())
+  connectionId          String
+  snaptradeAccountId    String                  @unique // SnapTrade Account ID
+  accountName           String?                 // Display name
+  accountNumber         String?  
+  accountType           String?                 // "CASH", "MARGIN", "TFSA", "RRSP", etc
 
-  workspace   Workspace      @relation(fields: [workspaceId], references: [id])
-  user        User           @relation(fields: [userId], references: [id])
+  // Balance Info
+  totalValue            Float    @default(0)
+  totalCash             Float    @default(0)
+  buyingPower           Float?
+  currency              String?  // "USD", "CAD", "EUR", etc
 
-  @@unique([workspaceId, userId])
+  // Status
+  status                String   @default("active") // "active", "inactive", "error"
+  lastSyncedAt          DateTime?
+  syncError             String?
+  metadata              Json?    // Store extra account metadata
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  connection            BrokerageConnection @relation(fields: [connectionId], references: [id], onDelete:Cascade)
+  positions             Position[]
+  portfolioSnapshots    PortfolioSnapshot[]
+  transactions          Transaction[]
+
+  @@index([connectionId])
+  @@index([lastSyncedAt])
+}
+
+model Position {
+  id                    String   @id @default(cuid())
+  accountId             String
+
+  // Security info
+  symbol                String
+  securityName          String?
+  securityType          String? // "EQUITY", "OPTION", "FUTURE", "BOND", "MUTUAL_FUND", "ETF", "CRYPTO", etc
+
+  // Position data
+  quantity              Float
+  averageCost           Float
+  currentPrice          Float
+  marketValue           Float
+  currency              String   @default("USD")
+
+  // Performance metrics
+  unrealizedPL          Float?
+  unrealizedPLPercent   Float?
+
+  // Metadata
+  snaptradePositionId   String?   @unique 
+  metadata              Json?     // Store extra position metadata
+
+  lastSyncedAt          DateTime
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  account               BrokerageAccount @relation(fields: [accountId], references: [id], onDelete:Cascade)
+
+  @@unique([accountId, symbol]) // one position per symbol per account 
+  @@index([accountId])
+  @@index([symbol])
+  @@index([lastSyncedAt])
+}
+
+model PortfolioSnapshot {
+  id                    String   @id @default(cuid())
+  accountId             String
+
+  totalValue            Float
+  totalCash             Float
+  totalInvestments      Float
+  totalPL               Float
+  totalPLPercent        Float
+
+  snapshotDate          DateTime @default(now())
+  metadata              Json?    // Store extra snapshot metadata
+
+  account               BrokerageAccount @relation(fields: [accountId], references: [id], onDelete:Cascade)
+
+  @@index([accountId, snapshotDate])
+}
+
+model Transaction {
+  id                      String   @id @default(cuid())
+  accountId               String
+
+  type                    String   // "buy", "sell", "dividend", "deposit", "withdrawal", etc
+  symbol                  String?
+  quantity                Float?
+  price                   Float?
+  amount                  Float
+  currency                String   @default("USD")
+  fee                     Float?
+
+  transactionDate         DateTime
+  description             String?
+  snaptradeTransactionId  String?  @unique
+  metadata                Json?    // Store extra transaction metadata
+
+  createdAt               DateTime @default(now())
+
+  account               BrokerageAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, transactionDate])
+  @@index([symbol])
+}
+
+// Cache for market data (optional but useful for performance)
+// We want to reduce API calls to the brokerages and use this cache to get the data
+model MarketDataCache {
+  symbol          String       @id
+  currentPrice    Float
+  change          Float?
+  changePercent   Float?
+  dayHigh         Float?
+  dayLow          Float?
+  volume          BigInt?
+  lastUpdated     DateTime     @default(now())
+
+  @@index([lastUpdated])
+}
+
+// Sync Jobs are used to track the status of sync jobs
+model SyncJob {
+  id              String       @id @default(cuid())
+  userId          String  
+  type            String       // "full", "incremental", "positions", "transactions"
+  status          String       // "pending", "running", "completed", "failed"
+  startedAt       DateTime?    @default(now())
+  completedAt     DateTime?
+  error           String?      
+  metadata        Json?
+
+  @@index([userId, status])
+
 }

@@ -12,8 +12,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { 
-  LineChart, 
-  Line, 
   AreaChart, 
   Area, 
   XAxis, 
@@ -21,8 +19,7 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer, 
-  ReferenceLine,
-  Legend
+  ReferenceLine
 } from "recharts";
 import { 
   TrendingDown, 
@@ -34,21 +31,12 @@ import {
   Link2, 
   Flag, 
   BarChart3, 
-  Activity,
-  Users,
-  User,
-  Eye,
-  EyeOff,
-  Percent,
-  DollarSign,
-  Maximize2,
-  Briefcase
+  Activity
 } from "lucide-react";
 import { useWorkspaceContext } from "@/lib/use-workspace-context";
+import { usePortfolioHistory, usePortfolioSummary, useSyncPortfolio } from "@/hooks/use-portfolio";
 
 type TimePeriod = "1D" | "1W" | "1M" | "3M" | "6M" | "1Y" | "YTD";
-type ViewMode = "combined" | "individual";
-type ChartMode = "absolute" | "percentage";
 
 interface PortfolioChartProps {
   selectedPeriod: TimePeriod;
@@ -56,257 +44,127 @@ interface PortfolioChartProps {
   mode?: "solo" | "squad"; // Optional prop to override context detection
 }
 
-interface MemberData {
-  id: string;
-  name: string;
-  username: string;
-  color: string;
-  initial: string;
-  visible: boolean;
-  isYou?: boolean;
-  isPrimary?: boolean; // For accounts
-  accountType?: "brokerage" | "retirement"; // For accounts
-}
-
 export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: PortfolioChartProps) {
   const { currentContext } = useWorkspaceContext();
   const isSoloMode = mode === "solo" || (mode === undefined && currentContext.type === "solo");
   
   const periods: TimePeriod[] = ["1D", "1W", "1M", "3M", "6M", "1Y", "YTD"];
-  const [lastSyncTime, setLastSyncTime] = useState<number>(2);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("combined");
-  const [chartMode, setChartMode] = useState<ChartMode>("absolute");
   
-  // Squad mode: Member data with visibility toggle - All 8 members from Team Omega
-  // Solo mode: Account data with visibility toggle - Individual brokerage/retirement accounts
-  const [members, setMembers] = useState<MemberData[]>(() => {
-    if (isSoloMode) {
-      // Solo mode: Track individual brokerage/retirement accounts
-      return [
-        { id: "robinhood", name: "Robinhood", username: "Growth Portfolio", color: "#00c805", initial: "R", visible: true, isPrimary: true, accountType: "brokerage" },
-        { id: "fidelity", name: "Fidelity", username: "Retirement Account", color: "#00754a", initial: "F", visible: true, accountType: "retirement" },
-        { id: "tdameritrade", name: "TD Ameritrade", username: "Active Trading", color: "#00a651", initial: "T", visible: true, accountType: "brokerage" },
-      ];
-    } else {
-      // Squad mode: Track team members
-      return [
-        { id: "mike", name: "Mike", username: "MoonShotKing", color: "#f97316", initial: "M", visible: true },
-        { id: "you", name: "Zach", username: "FlippinPsycho98", color: "#10b981", initial: "Z", visible: true, isYou: true },
-        { id: "jamb", name: "JAMB", username: "ChartMaster420", color: "#06b6d4", initial: "J", visible: true },
-        { id: "sarah", name: "Sarah", username: "TechQueenGG", color: "#a855f7", initial: "S", visible: true },
-        { id: "alex", name: "Alex", username: "DayTradeDemon", color: "#ef4444", initial: "A", visible: true },
-        { id: "jordan", name: "Jordan", username: "DiviKingdom", color: "#6366f1", initial: "J", visible: true },
-        { id: "chris", name: "Chris", username: "CryptoMoonBoi", color: "#eab308", initial: "C", visible: true },
-        { id: "taylor", name: "Taylor", username: "ThetaGangPro", color: "#14b8a6", initial: "T", visible: true },
-      ];
-    }
-  });
+  // Fetch real data from API
+  const { data: historyData, isLoading: historyLoading, error: historyError } = usePortfolioHistory(selectedPeriod);
+  const { data: summaryData, isLoading: summaryLoading } = usePortfolioSummary();
+  const syncMutation = useSyncPortfolio();
   
-  // Simulate time passing
+  // Calculate last sync time from summary data
+  const [lastSyncTime, setLastSyncTime] = useState<number>(0);
+  
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLastSyncTime(prev => prev + 1);
-    }, 60000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    if (summaryData?.lastSyncedAt) {
+      const syncDate = new Date(summaryData.lastSyncedAt);
+      const minutesAgo = Math.floor((Date.now() - syncDate.getTime()) / 60000);
+      setLastSyncTime(minutesAgo);
+    }
+  }, [summaryData]);
   
-  const handleSync = () => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
+  // Handle sync
+  const handleSync = async () => {
+    try {
+      await syncMutation.mutateAsync("quick");
       setLastSyncTime(0);
-    }, 1500);
+    } catch (error) {
+      console.error("Sync failed:", error);
+    }
   };
   
-  const toggleMemberVisibility = (id: string) => {
-    setMembers(prev => 
-      prev.map(m => m.id === id ? { ...m, visible: !m.visible } : m)
-    );
-  };
-  
-  // Generate mock data based on selected period
-  // Use seeded random to ensure consistent values between server and client
-  const seededRandom = (seed: number) => {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-  };
-
-  const generateData = (period: TimePeriod) => {
-    const dataPoints: { [key in TimePeriod]: number } = {
-      "1D": 24,
-      "1W": 7,
-      "1M": 30,
-      "3M": 90,
-      "6M": 180,
-      "1Y": 365,
-      "YTD": 290,
-    };
-
-    const points = dataPoints[period];
-    const data = [];
-    
-    // Base values - different for solo (accounts) vs squad (members)
-    const baseValues: { [key: string]: number } = isSoloMode ? {
-      robinhood: 45000,
-      fidelity: 32000,
-      tdameritrade: 22000,
-    } : {
-      mike: 70000,
-      you: 52000,
-      jamb: 40000,
-      sarah: 35000,
-      alex: 28000,
-      jordan: 23000,
-      chris: 17000,
-      taylor: 14000,
-    };
-    
-    // Current values - different for solo (accounts) vs squad (members)
-    const currentValues: { [key: string]: number } = isSoloMode ? {
-      robinhood: 56250,
-      fidelity: 38450,
-      tdameritrade: 25570,
-    } : {
-      mike: 92450,
-      you: 75270,
-      jamb: 43200,
-      sarah: 38450,
-      alex: 29800,
-      jordan: 24680,
-      chris: 18920,
-      taylor: 15340,
-    };
-    
-    const totalBase = Object.values(baseValues).reduce((a, b) => a + b, 0);
-    const totalCurrent = Object.values(currentValues).reduce((a, b) => a + b, 0);
-
-    for (let i = 0; i < points; i++) {
-      const progress = i / (points - 1);
-      
-      // Generate individual values with unique patterns
-      // Use seeded random based on period and index for consistency
-      const seed = period.charCodeAt(0) + period.charCodeAt(1) + i;
-      const memberValues: { [key: string]: number } = {};
-      
-      if (isSoloMode) {
-        // Solo mode: Generate account values
-        memberValues.robinhood = baseValues.robinhood + 
-          (currentValues.robinhood - baseValues.robinhood) * progress + 
-          Math.sin(i * 0.3) * 3000 + seededRandom(seed + 1) * 2000;
-        
-        memberValues.fidelity = baseValues.fidelity + 
-          (currentValues.fidelity - baseValues.fidelity) * progress + 
-          Math.sin(i * 0.25 + 1) * 2000 + seededRandom(seed + 2) * 1500;
-        
-        memberValues.tdameritrade = baseValues.tdameritrade + 
-          (currentValues.tdameritrade - baseValues.tdameritrade) * progress + 
-          Math.sin(i * 0.35 + 2) * 1500 + seededRandom(seed + 3) * 1000;
-      } else {
-        // Squad mode: Generate member values
-        memberValues.mike = baseValues.mike + 
-          (currentValues.mike - baseValues.mike) * progress + 
-          Math.sin(i * 0.3) * 5000 + seededRandom(seed + 1) * 3000;
-        
-        memberValues.you = baseValues.you + 
-          (currentValues.you - baseValues.you) * progress + 
-          Math.sin(i * 0.35 + 2) * 3500 + seededRandom(seed + 2) * 2000;
-        
-        memberValues.jamb = baseValues.jamb + 
-          (currentValues.jamb - baseValues.jamb) * progress + 
-          Math.sin(i * 0.25 + 1) * 2000 + seededRandom(seed + 3) * 1500;
-        
-        memberValues.sarah = baseValues.sarah + 
-          (currentValues.sarah - baseValues.sarah) * progress + 
-          Math.sin(i * 0.4 + 3) * 2500 + seededRandom(seed + 4) * 1800;
-        
-        memberValues.alex = baseValues.alex + 
-          (currentValues.alex - baseValues.alex) * progress + 
-          Math.sin(i * 0.45 + 4) * 1800 + seededRandom(seed + 5) * 1200;
-        
-        memberValues.jordan = baseValues.jordan + 
-          (currentValues.jordan - baseValues.jordan) * progress + 
-          Math.sin(i * 0.28 + 5) * 1500 + seededRandom(seed + 6) * 1000;
-        
-        memberValues.chris = baseValues.chris + 
-          (currentValues.chris - baseValues.chris) * progress + 
-          Math.sin(i * 0.5 + 6) * 1200 + seededRandom(seed + 7) * 800;
-        
-        memberValues.taylor = baseValues.taylor + 
-          (currentValues.taylor - baseValues.taylor) * progress + 
-          Math.sin(i * 0.32 + 7) * 1000 + seededRandom(seed + 8) * 600;
-      }
-      
-      const combinedValue = Object.values(memberValues).reduce((a, b) => a + b, 0);
-
-      let label = "";
-      if (period === "1D") {
-        label = i % 4 === 0 || i === points - 1 ? `${i}:00` : "";
-      } else if (period === "1W") {
-        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        label = days[i];
-      } else if (period === "1M" || period === "3M" || period === "6M" || period === "YTD") {
-        if (i % Math.floor(points / 6) === 0 || i === points - 1) {
-          const date = new Date();
-          date.setDate(date.getDate() - (points - i));
-          label = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-        }
-      } else {
-        if (i % Math.floor(points / 12) === 0 || i === points - 1) {
-          const date = new Date();
-          date.setMonth(date.getMonth() - Math.floor((points - i) / 30));
-          label = date.toLocaleDateString("en-US", { month: "short" });
-        }
-      }
-
-      // Calculate percentage changes for each member
-      const memberPercents: { [key: string]: number } = {};
-      Object.keys(memberValues).forEach(key => {
-        memberPercents[`${key}Percent`] = ((memberValues[key] - baseValues[key]) / baseValues[key]) * 100;
-      });
-      
-      const combinedPercent = ((combinedValue - totalBase) / totalBase) * 100;
-
-      // Build data object dynamically based on mode
-      const dataPoint: any = {
-        date: label,
-        combined: Math.round(combinedValue),
-        combinedPercent: parseFloat(combinedPercent.toFixed(2)),
-      };
-      
-      // Add individual values based on mode
-      Object.keys(memberValues).forEach(key => {
-        dataPoint[key] = Math.round(memberValues[key]);
-        if (memberPercents[`${key}Percent`]) {
-          dataPoint[`${key}Percent`] = parseFloat(memberPercents[`${key}Percent`].toFixed(2));
-        }
-      });
-      
-      data.push(dataPoint);
+  // Transform API data to chart format
+  const formatChartData = () => {
+    if (!historyData?.history || historyData.history.length === 0) {
+      return [];
     }
 
-    return data;
+    const history = historyData.history;
+    const chartData = [];
+    
+    // Get the account connection date or use a reasonable starting point
+    const firstSnapshotDate = new Date(history[0]?.date);
+    const currentDate = new Date();
+    
+    // Calculate the start date based on selected period
+    let periodStartDate = new Date();
+    switch (selectedPeriod) {
+      case "1D": periodStartDate.setDate(currentDate.getDate() - 1); break;
+      case "1W": periodStartDate.setDate(currentDate.getDate() - 7); break;
+      case "1M": periodStartDate.setMonth(currentDate.getMonth() - 1); break;
+      case "3M": periodStartDate.setMonth(currentDate.getMonth() - 3); break;
+      case "6M": periodStartDate.setMonth(currentDate.getMonth() - 6); break;
+      case "1Y": periodStartDate.setFullYear(currentDate.getFullYear() - 1); break;
+      case "YTD": periodStartDate = new Date(currentDate.getFullYear(), 0, 1); break;
+    }
+    
+    // If we only have one snapshot, add a baseline starting point
+    if (history.length === 1) {
+      const startDate = firstSnapshotDate > periodStartDate ? periodStartDate : new Date(firstSnapshotDate.getTime() - 24 * 60 * 60 * 1000);
+      const startLabel = selectedPeriod === "1D" 
+        ? startDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        : startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      
+      // Add baseline starting point at $0
+      chartData.push({
+        date: startLabel,
+        combined: 0,
+        combinedPercent: 0,
+        rawDate: startDate.toISOString(),
+      });
+    }
+    
+    // Add all actual snapshots
+    const baseValue = history[0]?.value || 0;
+    
+    history.forEach((point, index) => {
+      const date = new Date(point.date);
+      let label = "";
+      
+      // Format label based on period
+      if (selectedPeriod === "1D") {
+        label = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      } else if (selectedPeriod === "1W") {
+        label = date.toLocaleDateString("en-US", { weekday: "short" });
+      } else if (selectedPeriod === "1M" || selectedPeriod === "3M" || selectedPeriod === "6M" || selectedPeriod === "YTD") {
+        // Show fewer labels for longer periods
+        const totalPoints = history.length;
+        const showLabel = index % Math.max(1, Math.floor(totalPoints / 6)) === 0 || index === totalPoints - 1;
+        label = showLabel ? date.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "";
+      } else {
+        // 1Y
+        const totalPoints = history.length;
+        const showLabel = index % Math.max(1, Math.floor(totalPoints / 12)) === 0 || index === totalPoints - 1;
+        label = showLabel ? date.toLocaleDateString("en-US", { month: "short" }) : "";
+      }
+      
+      const percentChange = baseValue > 0 ? ((point.value - baseValue) / baseValue) * 100 : 0;
+      
+      chartData.push({
+        date: label,
+        combined: Math.round(point.value),
+        combinedPercent: parseFloat(percentChange.toFixed(2)),
+        rawDate: point.date,
+      });
+    });
+    
+    return chartData;
   };
 
-  const data = generateData(selectedPeriod);
-  // Calculate current value from combined data or use default
-  const currentValue = data.length > 0 ? data[data.length - 1].combined : (isSoloMode ? 120270 : 210920);
+  const data = formatChartData();
+  
+  // Calculate current value and metrics from real data
+  const currentValue = summaryData?.totalValue || (data.length > 0 ? data[data.length - 1].combined : 0);
   const goal = isSoloMode ? 200000 : 500000;
-  const goalProgress = (currentValue / goal) * 100;
+  const goalProgress = currentValue > 0 ? (currentValue / goal) * 100 : 0;
   
-  // Portfolio returns by period
-  const portfolioReturns: { [key in TimePeriod]: number } = {
-    "1D": -0.21,
-    "1W": 2.4,
-    "1M": 5.8,
-    "3M": 18.2,
-    "6M": 40.6,
-    "1Y": 52.3,
-    "YTD": 28.7,
-  };
+  // Calculate portfolio return for selected period from real data
+  const portfolioReturn = data.length > 0 ? data[data.length - 1].combinedPercent : 0;
   
-  // S&P500 returns by period
+  // S&P500 returns by period (mock data - would need external API for real data)
   const sp500Returns: { [key in TimePeriod]: number } = {
     "1D": 0.15,
     "1W": 1.2,
@@ -317,14 +175,14 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
     "YTD": 10.2,
   };
   
-  const portfolioReturn = portfolioReturns[selectedPeriod];
   const sp500Return = sp500Returns[selectedPeriod];
   const vsSP500 = portfolioReturn - sp500Return;
-  const healthScore = 92;
-  const todayChangePercent = -0.21;
-  const membersGreen = 2;
+  const healthScore = 92; // TODO: Calculate from real risk metrics
+  
+  // Calculate today's change from summary data
+  const todayChangePercent = summaryData?.totalPLPercent || 0;
   const nextMilestone = 250000;
-  const toMilestone = nextMilestone - currentValue;
+  const toMilestone = Math.max(0, nextMilestone - currentValue);
   
   // Calculate health score color and label
   const getHealthInfo = (score: number) => {
@@ -346,53 +204,88 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
   // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const value = payload[0].value;
+      const percentChange = payload[0].payload.combinedPercent;
       return (
         <div className="bg-slate-900 border border-slate-700 rounded-lg p-3 shadow-xl">
           <p className="text-slate-400 text-xs mb-2">{label}</p>
-          {viewMode === "combined" ? (
-            <div>
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-slate-300 text-sm">Combined Portfolio</span>
-                <span className="text-white font-medium tabular-nums">
-                  {chartMode === "absolute" 
-                    ? `$${payload[0].value.toLocaleString("en-US")}`
-                    : `${payload[0].value >= 0 ? '+' : ''}${payload[0].value.toFixed(2)}%`
-                  }
-                </span>
-              </div>
+          <div className="space-y-1">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-slate-300 text-sm">Value</span>
+              <span className="text-white font-medium tabular-nums">
+                ${value.toLocaleString("en-US")}
+              </span>
             </div>
-          ) : (
-            <div className="space-y-1.5">
-              {members.filter(m => m.visible).map((member, idx) => {
-                const dataKey = chartMode === "absolute" ? member.id : `${member.id}Percent`;
-                const value = payload.find((p: any) => p.dataKey === dataKey)?.value;
-                return (
-                  <div key={member.id} className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-2">
-                      <div 
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: member.color }}
-                      />
-                      <span className="text-slate-300 text-sm">
-                        {member.username}
-                      </span>
-                    </div>
-                    <span className="text-white font-medium tabular-nums">
-                      {chartMode === "absolute"
-                        ? `$${value?.toLocaleString("en-US")}`
-                        : `${value >= 0 ? '+' : ''}${value?.toFixed(2)}%`
-                      }
-                    </span>
-                  </div>
-                );
-              })}
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-slate-300 text-sm">Change</span>
+              <span className={`font-medium tabular-nums text-sm ${percentChange >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {percentChange >= 0 ? '+' : ''}{percentChange.toFixed(2)}%
+              </span>
             </div>
-          )}
+          </div>
         </div>
       );
     }
     return null;
   };
+
+  // Show loading state
+  if (historyLoading || summaryLoading) {
+    return (
+      <Card className="border-slate-700/50 bg-gradient-to-b from-slate-800/40 via-slate-900/40 to-slate-800/40 backdrop-blur-sm">
+        <div className="p-5 space-y-4">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center space-y-3">
+              <RefreshCw className="w-8 h-8 text-cyan-400 animate-spin mx-auto" />
+              <p className="text-slate-400">Loading portfolio data...</p>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show error state
+  if (historyError) {
+    return (
+      <Card className="border-slate-700/50 bg-gradient-to-b from-slate-800/40 via-slate-900/40 to-slate-800/40 backdrop-blur-sm">
+        <div className="p-5 space-y-4">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center space-y-3">
+              <div className="text-red-400 text-sm">
+                Error loading chart data: {historyError.message}
+              </div>
+              <Button onClick={handleSync} className="mt-4">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Retry
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Show empty state if no data
+  if (!data || data.length === 0) {
+    return (
+      <Card className="border-slate-700/50 bg-gradient-to-b from-slate-800/40 via-slate-900/40 to-slate-800/40 backdrop-blur-sm">
+        <div className="p-5 space-y-4">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center space-y-3">
+              <BarChart3 className="w-12 h-12 text-slate-600 mx-auto" />
+              <p className="text-slate-400">No portfolio history available yet</p>
+              <p className="text-slate-500 text-sm">Sync your accounts to start tracking performance</p>
+              <Button onClick={handleSync} className="mt-4">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Sync Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-slate-700/50 bg-gradient-to-b from-slate-800/40 via-slate-900/40 to-slate-800/40 backdrop-blur-sm">
@@ -411,44 +304,46 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
               
               {/* Stats Row 1: Performance Metrics */}
               <div className="flex items-center gap-2 flex-wrap text-xs sm:text-sm">
-                {/* Today's Change */}
-                <div className="flex items-center gap-1.5">
-                  <TrendingDown className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                  <span className="text-red-400 tabular-nums">{todayChangePercent}% today</span>
+                {/* Period Return - Most Important Metric */}
+                <div className={`flex items-center gap-1.5 ${portfolioReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  {portfolioReturn >= 0 ? (
+                    <TrendingUp className="w-4 h-4 flex-shrink-0" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 flex-shrink-0" />
+                  )}
+                  <span className="font-semibold tabular-nums">
+                    {portfolioReturn >= 0 ? '+' : ''}{portfolioReturn.toFixed(2)}%
+                  </span>
+                  <span className="text-slate-400 font-normal">({selectedPeriod})</span>
                 </div>
                 
                 <span className="text-slate-600">•</span>
                 
-                {/* Portfolio Return - moved to same line as Today's Change */}
-                <div className={`flex items-center gap-1.5 ${portfolioReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                  {portfolioReturn >= 0 ? (
-                    <TrendingUp className="w-3.5 h-3.5 flex-shrink-0" />
-                  ) : (
-                    <TrendingDown className="w-3.5 h-3.5 flex-shrink-0" />
-                  )}
+                {/* Today's Change */}
+                <div className={`flex items-center gap-1.5 ${todayChangePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span className="text-slate-400">Today:</span>
                   <span className="tabular-nums">
-                    {portfolioReturn >= 0 ? '+' : ''}{portfolioReturn.toFixed(1)}% ({selectedPeriod})
+                    {todayChangePercent >= 0 ? '+' : ''}{todayChangePercent.toFixed(2)}%
                   </span>
                 </div>
                 
                 <span className="text-slate-600 hidden md:inline">•</span>
                 
-                {/* S&P500 Return */}
-                <div className={`hidden md:flex items-center gap-1.5 ${sp500Return >= 0 ? 'text-slate-400' : 'text-slate-500'}`}>
+                {/* vs S&P500 */}
+                <div className={`hidden md:flex items-center gap-1.5 ${vsSP500 >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                   <BarChart3 className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-slate-400">vs S&P:</span>
                   <span className="tabular-nums">
-                    S&P500: {sp500Return >= 0 ? '+' : ''}{sp500Return.toFixed(1)}%
+                    {vsSP500 >= 0 ? '+' : ''}{vsSP500.toFixed(1)}%
                   </span>
                 </div>
                 
                 <span className="text-slate-600 hidden md:inline">•</span>
                 
-                {/* Status - Different for solo vs squad */}
-                {isSoloMode ? (
-                  <span className="hidden md:inline text-slate-300">{members.filter(m => m.visible).length} accounts active</span>
-                ) : (
-                  <span className="hidden md:inline text-slate-300">{membersGreen} members green</span>
-                )}
+                {/* Status */}
+                <span className="hidden md:inline text-slate-400">
+                  {summaryData?.accountCount || 0} {summaryData?.accountCount === 1 ? 'account' : 'accounts'}
+                </span>
               </div>
               
               {/* Stats Row 2: Milestone Progress */}
@@ -491,11 +386,11 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
               <Button
                 size="sm"
                 onClick={handleSync}
-                disabled={isSyncing}
+                disabled={syncMutation.isPending}
                 className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-400 border border-cyan-500/40 hover:from-cyan-500/30 hover:to-blue-500/30 shadow-lg shadow-cyan-500/20"
               >
-                <RefreshCw className={`w-4 h-4 mr-1.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Syncing...' : 'Sync'}
+                <RefreshCw className={`w-4 h-4 mr-1.5 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+                {syncMutation.isPending ? 'Syncing...' : 'Sync'}
               </Button>
               
               {/* More Actions Dropdown */}
@@ -542,122 +437,28 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
           </div>
         </div>
 
-        {/* Chart Controls */}
+        {/* Chart Info - Period Performance Summary */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="inline-flex gap-1 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode("combined")}
-                className={`h-8 px-2.5 sm:px-3 text-xs transition-all ${
-                  viewMode === "combined"
-                    ? "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/40 shadow-sm shadow-cyan-500/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-                }`}
-              >
-                {isSoloMode ? (
-                  <>
-                    <Briefcase className="w-3.5 h-3.5 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Combined</span>
-                  </>
-                ) : (
-                  <>
-                    <Users className="w-3.5 h-3.5 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Combined</span>
-                  </>
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setViewMode("individual")}
-                className={`h-8 px-2.5 sm:px-3 text-xs transition-all ${
-                  viewMode === "individual"
-                    ? "bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 border border-cyan-500/40 shadow-sm shadow-cyan-500/20"
-                    : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-                }`}
-              >
-                {isSoloMode ? (
-                  <>
-                    <Briefcase className="w-3.5 h-3.5 sm:mr-1.5" />
-                    <span className="hidden sm:inline">By Account</span>
-                  </>
-                ) : (
-                  <>
-                    <User className="w-3.5 h-3.5 sm:mr-1.5" />
-                    <span className="hidden sm:inline">Individual</span>
-                  </>
-                )}
-              </Button>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400">Period Return:</span>
+              <span className={`font-semibold tabular-nums ${portfolioReturn >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {portfolioReturn >= 0 ? '+' : ''}{portfolioReturn.toFixed(2)}%
+              </span>
             </div>
-
-            {/* Chart Mode Toggle */}
-            <div className="inline-flex gap-1 bg-slate-800/50 rounded-lg p-1 border border-slate-700/50">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setChartMode("absolute")}
-                className={`h-8 px-2.5 sm:px-3 text-xs transition-all ${
-                  chartMode === "absolute"
-                    ? "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 border border-purple-500/40"
-                    : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-                }`}
-              >
-                <DollarSign className="w-3.5 h-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Value</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setChartMode("percentage")}
-                className={`h-8 px-2.5 sm:px-3 text-xs transition-all ${
-                  chartMode === "percentage"
-                    ? "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 border border-purple-500/40"
-                    : "text-slate-400 hover:text-white hover:bg-slate-700/50"
-                }`}
-              >
-                <Percent className="w-3.5 h-3.5 sm:mr-1" />
-                <span className="hidden sm:inline">Change</span>
-              </Button>
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-slate-400">S&P 500:</span>
+              <span className={`tabular-nums ${sp500Return >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {sp500Return >= 0 ? '+' : ''}{sp500Return.toFixed(2)}%
+              </span>
+            </div>
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-slate-400">Outperformance:</span>
+              <span className={`font-medium tabular-nums ${vsSP500 >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                {vsSP500 >= 0 ? '+' : ''}{vsSP500.toFixed(1)}%
+              </span>
             </div>
           </div>
-
-          {/* Member/Account Legend (Individual View Only) */}
-          {viewMode === "individual" && (
-            <div className="flex items-center gap-2 flex-wrap">
-              {members.map((member) => (
-                <button
-                  key={member.id}
-                  onClick={() => toggleMemberVisibility(member.id)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-                    member.visible
-                      ? 'bg-slate-800/50 border-slate-700/50 hover:bg-slate-700/50'
-                      : 'bg-slate-900/50 border-slate-800/50 opacity-50 hover:opacity-75'
-                  }`}
-                >
-                  <div 
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: member.color }}
-                  />
-                  <span className="text-xs text-slate-300">
-                    {isSoloMode ? member.name : member.username}
-                  </span>
-                  {isSoloMode && member.accountType && (
-                    <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 border-slate-600 text-slate-400">
-                      {member.accountType === "retirement" ? "401k" : "Brokerage"}
-                    </Badge>
-                  )}
-                  {member.visible ? (
-                    <Eye className="w-3 h-3 text-slate-400" />
-                  ) : (
-                    <EyeOff className="w-3 h-3 text-slate-500" />
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Chart with enhanced features */}
@@ -665,85 +466,39 @@ export function PortfolioChart({ selectedPeriod, onPeriodChange, mode }: Portfol
           {/* Chart */}
           <div className="px-4 pt-4 pb-4">
             <ResponsiveContainer width="100%" height={360}>
-              {viewMode === "combined" ? (
-                <AreaChart data={data}>
-                  <defs>
-                    <linearGradient id="colorCombined" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.05} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#64748b"
-                    tick={{ fill: "#94a3b8", fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    stroke="#64748b"
-                    tick={{ fill: "#94a3b8", fontSize: 11 }}
-                    tickFormatter={(value) => 
-                      chartMode === "absolute" 
-                        ? `${(value / 1000).toFixed(0)}k`
-                        : `${value.toFixed(0)}%`
-                    }
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  {chartMode === "percentage" && (
-                    <ReferenceLine y={0} stroke="#64748b" strokeDasharray="3 3" opacity={0.5} />
-                  )}
-                  <Area
-                    type="monotone"
-                    dataKey={chartMode === "absolute" ? "combined" : "combinedPercent"}
-                    stroke="#06b6d4"
-                    strokeWidth={2.5}
-                    fill="url(#colorCombined)"
-                    dot={false}
-                    activeDot={{ r: 6, fill: "#06b6d4", stroke: "#0f172a", strokeWidth: 2 }}
-                  />
-                </AreaChart>
-              ) : (
-                <LineChart data={data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#64748b"
-                    tick={{ fill: "#94a3b8", fontSize: 11 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    stroke="#64748b"
-                    tick={{ fill: "#94a3b8", fontSize: 11 }}
-                    tickFormatter={(value) => 
-                      chartMode === "absolute" 
-                        ? `${(value / 1000).toFixed(0)}k`
-                        : `${value.toFixed(0)}%`
-                    }
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <Tooltip content={<CustomTooltip />} />
-                  {chartMode === "percentage" && (
-                    <ReferenceLine y={0} stroke="#64748b" strokeDasharray="3 3" opacity={0.5} />
-                  )}
-                  {members.filter(m => m.visible).map((member) => (
-                    <Line
-                      key={member.id}
-                      type="monotone"
-                      dataKey={chartMode === "absolute" ? member.id : `${member.id}Percent`}
-                      stroke={member.color}
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{ r: 6, fill: member.color, stroke: "#0f172a", strokeWidth: 2 }}
-                    />
-                  ))}
-                </LineChart>
-              )}
+              <AreaChart data={data}>
+                <defs>
+                  <linearGradient id="colorCombined" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} />
+                <XAxis
+                  dataKey="date"
+                  stroke="#64748b"
+                  tick={{ fill: "#94a3b8", fontSize: 11 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  stroke="#64748b"
+                  tick={{ fill: "#94a3b8", fontSize: 11 }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="combined"
+                  stroke="#06b6d4"
+                  strokeWidth={2.5}
+                  fill="url(#colorCombined)"
+                  dot={false}
+                  activeDot={{ r: 6, fill: "#06b6d4", stroke: "#0f172a", strokeWidth: 2 }}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </div>
           

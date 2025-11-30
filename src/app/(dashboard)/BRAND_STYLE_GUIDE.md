@@ -1,6 +1,6 @@
 # Brand Style Guide
 
-**Version 1.0** | Last Updated: October 21, 2025
+**Version 2.0** | Last Updated: October 25, 2025
 
 ---
 
@@ -25,32 +25,34 @@
 
 ### What We Are
 
-A **competitive fintech SaaS platform** where traders and investors join workspaces to share portfolios, track collective performance, and compete while making money together.
+A **collaborative fintech SaaS platform** where traders and investors join workspaces to share portfolios, track collective performance, and grow wealth together as a squad.
 
 ### Positioning Statement
 
-> "Where Robinhood's legendary simplicity meets gaming dashboard energy - a place for traders who take their gains seriously but celebrate their wins louder."
+> "Where Robinhood's legendary simplicity meets cooperative gaming energy - a place where squads build wealth together, celebrate collective wins, and lift each other up."
 
 ### Brand Pillars
 
-1. **Competitive Excellence** - We gamify success without trivializing finance
-2. **Transparent Performance** - Every metric matters, nothing is hidden
-3. **Team Power** - Individual strength, collective glory
-4. **Elevated Simplicity** - Sophisticated data, accessible interface
+1. **Collective Growth** - We succeed together, no one gets left behind
+2. **Transparent Performance** - Every metric matters, shared openly to help each other improve
+3. **Squad Power** - Individual contributions, collective celebration
+4. **Elevated Simplicity** - Sophisticated data, accessible interface, encouraging experience
 
 ### Target Audience
 
 **Primary:** 25-40 year old active traders who:
 - Trade daily or weekly
-- Value community and competition
+- Value community and mutual support
 - Appreciate clean, modern interfaces
 - Want serious analytics with gaming-level engagement
-- Celebrate wins and learn from losses
+- Celebrate collective wins and learn from mistakes together
+- Believe in "we're all gonna make it" mentality
 
 **Secondary:** 
 - Investment clubs and trading groups
 - Finance enthusiasts building wealth together
-- Competitive investors tracking leaderboards
+- Collaborative investors supporting each other's growth
+- Friends and family investing as a team
 
 ---
 
@@ -61,44 +63,49 @@ A **competitive fintech SaaS platform** where traders and investors join workspa
 **If our brand were a person:**
 
 ```
-Archetype: The Champion + The Sage
+Archetype: The Ally + The Mentor
 
 Personality Traits:
-├─ Competitive (but supportive)
-├─ Data-driven (but intuitive)
-├─ Celebratory (but measured)
-├─ Professional (but accessible)
-└─ Future-focused (but grounded)
+├─ Supportive (lifting each other up)
+├─ Data-driven (honest insights to help improve)
+├─ Celebratory (every win deserves recognition)
+├─ Encouraging (mistakes are learning opportunities)
+└─ Growth-focused (we're all gonna make it)
 
 Mood Board Keywords:
-→ Neon-lit trading floors
-→ Gaming tournament energy
-→ Cyberpunk aesthetics
-→ Trophy rooms with LED displays
-→ Mission control dashboards
+→ Cooperative gaming guilds
+→ Squad-based achievements
+→ Shared victory celebrations
+→ Team coordination dashboards
+→ Collective progression systems
+→ "No man left behind" energy
 ```
 
 ### Core Values
 
-1. **Merit-Based Recognition**
-   - Top performers get gold medals, not just numbers
-   - Every trader's strength is highlighted
-   - Even down periods show positive contributions
+1. **Collective Recognition**
+   - Everyone's contributions matter and are highlighted
+   - Top performers inspire, not intimidate
+   - Celebrate personal bests, not just absolute wins
+   - Even tough periods show resilience and growth
 
 2. **Radical Transparency**
-   - All metrics visible
-   - Real-time updates
-   - No hiding losses or risks
+   - All metrics visible to help each other learn
+   - Real-time updates so squad can support
+   - No hiding losses - we learn together
+   - Open sharing builds trust
 
-3. **Collective Growth**
-   - Individual portfolios feed team success
-   - Shared milestones celebrated together
+3. **Squad Growth**
+   - Individual portfolios contribute to team milestones
+   - Shared achievements celebrated together
    - Rising tide lifts all boats
+   - We succeed as a unit
 
-4. **Data Respect**
-   - Numbers never lie
-   - Beautiful presentation, accurate data
-   - Context always provided
+4. **Positive Encouragement**
+   - Data is presented to inform, not judge
+   - Mistakes are reframed as learning opportunities
+   - Focus on progress and improvement
+   - Celebrate streaks, consistency, and effort
 
 ---
 
@@ -473,6 +480,16 @@ xl:  w-8 h-8  (32px) - Feature icons
 
 Our unique recognition system uses **color-coded medals**:
 
+**Philosophy:** Medals show current standing in a **friendly, non-threatening way**. Think of it like a scoreboard in a co-op game where everyone can see each other's stats. The focus is on "look how far we've all come" rather than "I beat you."
+
+**Usage Guidelines:**
+- ✅ Use for fun friendly rivalry and quick visual reference
+- ✅ Pair with encouraging language: "Great progress!" or "Keep climbing!"
+- ✅ Show personal improvement: "Moved up from 5th to 3rd this month!"
+- ❌ Don't use language like "You beat X" or "You're losing to Y"
+- ❌ Don't emphasize the gap between ranks
+- ❌ Don't make lower ranks feel "less than"
+
 #### Gold Medal (1st Place)
 ```tsx
 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 
@@ -745,138 +762,155 @@ ease-in-out    - Slow start and end (toggles, swaps)
 ### Brand Voice Attributes
 
 ```
-Confident    ████████░░  80%  - We know what we're doing
-Supportive   ███████░░░  70%  - We've got your back
-Data-driven  ██████████  100% - Numbers never lie
-Celebratory  ██████░░░░  60%  - Wins deserve recognition
-Professional ████████░░  80%  - This is serious money
-Casual       ████░░░░░░  40%  - But not stuffy
+Supportive   ██████████  100% - We're all in this together
+Encouraging  ██████████  100% - Every step forward counts
+Data-driven  ██████████  100% - Numbers never lie, but context matters
+Celebratory  █████████░   90% - Squad wins deserve recognition
+Confident    ████████░░   80% - We know what we're doing
+Forgiving    ████████░░   80% - Mistakes are learning opportunities
 ```
 
 ### Tone Variations by Context
 
 #### Dashboard / Performance Display
-**Tone:** Direct, factual, celebratory when warranted
+**Tone:** Encouraging, factual, collective celebration
 
 ```
 ✅ Good:
-"Portfolio up 24.6% this month. You're crushing it."
-"3 milestones reached this quarter. Team effort pays off."
+"Squad portfolio up 24.6% this month. Great teamwork!"
+"3 team milestones reached this quarter. Everyone contributed."
+"Your personal best: +15.2%. Keep building momentum!"
 
 ❌ Avoid:
-"OMG! Your portfolio is doing AMAZING!!!"
-"Wow, such gains, very profit."
+"You're crushing the competition!"
+"Top performer this week - others need to catch up."
+"You're way ahead of the pack."
 ```
 
 #### Warnings / Risk Alerts
-**Tone:** Clear, urgent but calm, actionable
+**Tone:** Supportive, calm, collaborative problem-solving
 
 ```
 ✅ Good:
-"Portfolio volatility increased 15%. Review risk allocation."
-"Margin call approaching. Add $2,500 or reduce positions."
+"Portfolio volatility increased 15%. Let's review allocation together."
+"Heads up: margin approaching. Squad is here to help strategize."
+"Market dip detected. This is a learning opportunity for the team."
 
 ❌ Avoid:
+"Warning: You're losing money fast!"
 "Danger! Your portfolio is at risk!"
-"Uh oh... this doesn't look good."
+"You messed up - fix this now."
 ```
 
 #### Achievements / Milestones
-**Tone:** Celebratory but measured, specific recognition
+**Tone:** Celebratory, inclusive, squad-focused
 
 ```
 ✅ Good:
-"$250K milestone reached. Quarter Mil Club unlocked."
-"50% win rate achieved. Consistency pays off."
+"Squad milestone: $1M total value! Everyone helped us get here."
+"Personal best unlocked! +$10K this month. Team is proud."
+"Consistency badge earned: 30-day win streak. You're inspiring the squad!"
+"First profitable month! Every journey starts with one step."
 
 ❌ Avoid:
-"Yay! You did it! So proud of you!"
-"Achievement unlocked! (Generic celebration)"
+"You beat everyone! You're #1!"
+"Achievement unlocked! Show them who's boss!"
+"Winner winner - you crushed it while others struggled."
+```
+
+#### Loss / Down Periods
+**Tone:** Forgiving, constructive, forward-looking
+
+```
+✅ Good:
+"Down 8% this week. Markets are tough right now - squad's got your back."
+"Learning moment: Let's review what happened and adjust strategy."
+"Rough patch. Remember: even the best traders have down periods."
+"Every setback is setup for a comeback. Keep going."
+
+❌ Avoid:
+"Ouch, that hurts..."
+"You lost money this week."
+"Better luck next time."
+"This isn't looking good."
 ```
 
 #### Empty States
-**Tone:** Encouraging, clear next steps, optimistic
+**Tone:** Welcoming, clear next steps, non-pressuring
 
 ```
 ✅ Good:
-"No portfolio yet. Start building to track performance."
-"No team members. Invite traders to compete together."
+"No portfolio yet. Ready when you are - start small, build together."
+"No squad members yet. Invite friends to grow wealth together."
+"First trade is always the hardest. Take your time, we'll guide you."
 
 ❌ Avoid:
-"Nothing here yet..."
-"It's lonely in here. Add some friends!"
+"Nothing here yet. Get started!"
+"Empty! Add something now!"
+"You should really create a portfolio."
 ```
 
 ### Writing Guidelines
 
-#### Numbers & Data
+#### Celebrating Wins
 ```
 ✅ DO:
-- Use specific numbers: "$847,392" not "around 850K"
-- Include context: "+24.6% (last 30 days)"
-- Show precision: "$12,483.72" not "$12,483"
-- Use tabular numerals: <span className="tabular-nums">
+- Celebrate team milestones: "Squad hit $1M together!"
+- Recognize personal bests: "Your best month yet!"
+- Acknowledge consistency: "10 profitable weeks in a row"
+- Share credit: "Great team collaboration this quarter"
 
 ❌ DON'T:
-- Round unnecessarily
-- Hide negative numbers
-- Use vague terms: "doing well", "not great"
+- Pit members against each other: "You beat Alex!"
+- Overemphasis individual ranking: "You're destroying the competition"
+- Create FOMO: "Others are winning while you're not"
+- Dismiss struggles: "Just keep winning!"
 ```
 
-#### Labels & Headers
+#### Handling Losses
 ```
 ✅ DO:
-- Be specific: "Monthly ROI" not "Performance"
-- Use sentence case: "Top holdings" not "TOP HOLDINGS"
-- Keep it concise: 2-4 words max
+- Normalize losses: "Every trader has down periods"
+- Offer perspective: "Down 5% this week, up 20% this quarter"
+- Encourage reflection: "What can we learn from this?"
+- Provide support: "Squad is here to help strategize"
 
 ❌ DON'T:
-- Use jargon without context: "Sharpe Ratio" → "Sharpe Ratio (risk-adjusted return)"
-- Write paragraphs in headers
-- Use ALL CAPS (except abbreviations)
+- Dramatize losses: "Ouch! That's gotta hurt"
+- Compare negatively: "You're the only one down this week"
+- Use alarming language: "Disaster! Your portfolio crashed!"
+- Show disappointment: "Expected better from you"
 ```
 
-#### Calls to Action
+#### Achievement Framing
 ```
 ✅ DO:
-- Action-oriented: "View breakdown" not "Click here"
-- Clear outcome: "Add team member" not "Invite"
-- Specific: "Export CSV" not "Download"
+- Squad achievements: "Team reached $2M milestone together"
+- Personal milestones: "Your 50th profitable trade"
+- Learning achievements: "Completed first full quarter"
+- Consistency rewards: "30-day active trading streak"
 
 ❌ DON'T:
-- Generic: "Submit", "OK", "Go"
-- Vague: "Continue", "Next"
-- Passive: "Data can be exported"
+- Competitive achievements: "Beat all squad members"
+- Ranking-focused: "Climbed to #1 this week"
+- Comparison-based: "Outperformed the team average"
+- Zero-sum framing: "Winner of this month's competition"
 ```
 
 ### Vocabulary Guide
 
 **Preferred Terms:**
 
-| Use This | Not That |
-|----------|----------|
-| Portfolio | Account, Wallet |
-| Performance | How you're doing |
-| Milestone | Goal, Target |
-| Team member | User, Person, Friend |
-| Workspace | Group, Team, Organization |
-| Win rate | Success rate |
-| Position | Stock, Holding |
-| Allocation | Distribution, Split |
-| Volatility | Riskiness, Ups and downs |
-| Drawdown | Loss, Negative |
-
-**Finance Terms (OK to use):**
-- ROI, P&L, YTD, Sharpe Ratio
-- Long, Short, Call, Put
-- Bull, Bear (market context)
-- Volume, Liquidity, Spread
-
-**Gaming Terms (Use sparingly):**
-- XP, Level, Badge (for gamification only)
-- Leaderboard (for rankings)
-- Unlock, Achievement (for milestones)
-- Streak (for consistency tracking)
+| Use This | Not That | Why |
+|----------|----------|-----|
+| Squad, Team | Competition, Rivals | Emphasizes collaboration |
+| Personal best | Beat others, Won | Focuses on self-improvement |
+| Squad milestone | Team ranking | Collective achievement |
+| Learning opportunity | Mistake, Failure | Growth mindset |
+| Contribution | Performance vs others | Individual value |
+| Progress | Winning, Beating | Continuous improvement |
+| Support network | Leaderboard | Community focus |
+| Collective value | Who's winning | Shared success |
 
 ---
 
@@ -1251,6 +1285,35 @@ For more detailed information, refer to:
 - Voice and tone guidelines
 - Content patterns documented
 
+**v2.0** - October 25, 2025  
+**Major Update: Shift to Collaborative & Supportive Brand Identity**
+- 🔄 **Brand Philosophy**: Shifted from competitive to collaborative approach
+- ✨ **Core Changes**:
+  - Updated positioning: "cooperative gaming energy" vs "competitive fintech"
+  - Changed archetype from "The Champion" to "The Ally + The Mentor"
+  - Brand pillars now emphasize collective growth and squad power
+  - Target audience expanded to "we're all gonna make it" mentality
+  
+- 📝 **Voice & Tone Overhaul**:
+  - Supportive & Encouraging now 100% (increased from 70%)
+  - Added "Forgiving" attribute at 80%
+  - New section: Loss/Down Periods with constructive, supportive tone
+  - Achievement framing now squad-focused vs individual ranking
+  - Vocabulary guide: "Squad" over "Competition", "Personal best" over "Beat others"
+  
+- 🏅 **Medal System Update**:
+  - Added philosophy: friendly rivalry, not threatening competition
+  - Guidelines for encouraging language with rankings
+  - Focus on "look how far we've all come" vs "I beat you"
+  
+- 💬 **Content Patterns**:
+  - Celebrate team milestones first, individual second
+  - Normalize losses as learning opportunities
+  - Emphasize progress and consistency over absolute performance
+  - Remove comparison-based achievements
+
+**Philosophy:** "No one gets left behind. We're building wealth together."
+
 ---
 
 ## Maintenance
@@ -1263,11 +1326,10 @@ This is a **living document**. Update when:
 - User feedback suggests changes
 
 **Document Owner:** Design Team  
-**Last Review:** October 21, 2025  
+**Last Review:** October 25, 2025  
 **Next Review:** January 2026
 
 ---
 
 *"Data never lies, but presentation makes it sing."*  
 — Brand Philosophy
-
