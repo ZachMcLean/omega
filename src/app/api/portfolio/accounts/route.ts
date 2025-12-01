@@ -58,15 +58,33 @@ export async function GET(req: NextRequest) {
       orderBy: { snapshotDate: "desc" },
     });
 
+    // Also check for today's snapshot (in case we already created one today)
+    const todaySnapshot = await prisma.portfolioSnapshot.findFirst({
+      where: {
+        accountId: acc.id,
+        snapshotDate: { gte: today },
+      },
+      orderBy: { snapshotDate: "desc" },
+    });
+
     // Calculate daily performance
     let dailyPL = 0;
     let dailyPLPercent = 0;
     
-    if (yesterdaySnapshot) {
-      dailyPL = acc.totalValue - yesterdaySnapshot.totalValue;
-      dailyPLPercent = yesterdaySnapshot.totalValue > 0 
-        ? (dailyPL / yesterdaySnapshot.totalValue) * 100 
+    // Use yesterday's snapshot if available, otherwise use today's snapshot as baseline
+    const baselineSnapshot = yesterdaySnapshot || todaySnapshot;
+    const baselineValue = baselineSnapshot?.totalValue;
+    
+    if (baselineValue !== undefined && baselineValue !== null) {
+      dailyPL = acc.totalValue - baselineValue;
+      dailyPLPercent = baselineValue > 0 
+        ? (dailyPL / baselineValue) * 100 
         : 0;
+    } else {
+      // If no snapshots exist yet, we can't calculate daily change
+      // This happens for brand new accounts
+      dailyPL = 0;
+      dailyPLPercent = 0;
     }
 
     return {
