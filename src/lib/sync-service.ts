@@ -149,8 +149,19 @@ export class SnapTradeSyncService {
       },
     });
 
+    console.log(`[Sync] Syncing positions for ${accounts.length} account(s)`);
+
     for (const account of accounts) {
       try {
+        console.log(`[Sync] Fetching positions for account ${account.snaptradeAccountId} (${account.accountName || account.accountNumber})`);
+        console.log(`[Sync] Account balance: $${account.totalValue}, Cash: $${account.totalCash}`);
+        
+        // Check if account has any value (might be cash-only)
+        if (account.totalValue === 0) {
+          console.warn(`[Sync] ⚠️ Account ${account.snaptradeAccountId} has $0 total value - skipping position sync`);
+          continue;
+        }
+        
         const positionsRes = await snaptrade.accountInformation.getUserAccountPositions({
           userId: this.snaptradeUserId,
           userSecret: this.userSecret,
@@ -158,70 +169,191 @@ export class SnapTradeSyncService {
         });
 
         const positions = positionsRes.data || [];
+        console.log(`[Sync] Received ${positions.length} position(s) from SnapTrade for account ${account.snaptradeAccountId}`);
+        console.log(`[Sync] SnapTrade response status: ${positionsRes.response?.status || 'unknown'}`);
+        console.log(`[Sync] Response data type: ${Array.isArray(positionsRes.data) ? 'array' : typeof positionsRes.data}`);
 
-        // Delete old positions not in the new list
-        const currentSymbols = positions.map((p: any) => p.symbol?.symbol);
-        await prisma.position.deleteMany({
-          where: {
-            accountId: account.id,
-            symbol: { notIn: currentSymbols },
-          },
-        });
+        // Log raw position data for debugging
+        if (positions.length > 0) {
+          console.log(`[Sync] Sample position structure:`, JSON.stringify(positions[0], null, 2));
+        } else {
+          // If no positions, log the full response to see what we got
+          console.warn(`[Sync] ⚠️ NO POSITIONS RETURNED from SnapTrade for account ${account.snaptradeAccountId}`);
+          console.warn(`[Sync] Full response:`, JSON.stringify(positionsRes, null, 2));
+          console.warn(`[Sync] Account details:`, {
+            snaptradeAccountId: account.snaptradeAccountId,
+            accountName: account.accountName,
+            totalValue: account.totalValue,
+            totalCash: account.totalCash,
+            broker: account.connection.broker,
+          });
+        }
 
-        // Upsert current positions
+        // Extract symbols more robustly
+        const validPositions: Array<{ symbol: string; position: any }> = [];
+        const invalidPositions: any[] = [];
+
         for (const pos of positions) {
-          const symbolObj = pos.symbol?.symbol;
-          const symbol = typeof symbolObj === 'string' ? symbolObj : (symbolObj as any)?.symbol || String(symbolObj);
-          if (!symbol) continue;
-
-          const quantity = pos.units || 0;
-          const currentPrice = pos.price || 0;
-          const marketValue = currentPrice * quantity;
-          const avgCost = pos.average_purchase_price || currentPrice;
-          const unrealizedPL = (currentPrice - avgCost) * quantity;
-          const unrealizedPLPercent = avgCost > 0 ? (unrealizedPL / (avgCost * quantity)) * 100 : 0;
+          // Try multiple ways to extract symbol
+          let symbol: string | null = null;
           
-          const securityName = typeof pos.symbol?.description === 'string' ? pos.symbol.description : symbol;
-          const securityType = typeof pos.symbol?.type?.description === 'string' ? pos.symbol.type.description : "stock";
-          const currency = typeof pos.symbol?.currency?.code === 'string' ? pos.symbol.currency.code : "USD";
+          // Method 1: Nested symbol structure (pos.symbol.symbol.symbol) - MOST COMMON
+          if (pos.symbol?.symbol?.symbol && typeof pos.symbol.symbol.symbol === 'string') {
+            symbol = pos.symbol.symbol.symbol;
+          }
+          // Method 2: Direct symbol.symbol (fallback)
+          else if (pos.symbol?.symbol && typeof pos.symbol.symbol === 'string') {
+            symbol = pos.symbol.symbol;
+          }
+          // Method 3: Symbol as object with symbol property
+          else if (pos.symbol && typeof pos.symbol === 'object' && 'symbol' in pos.symbol) {
+            const symbolObj = (pos.symbol as any).symbol;
+            if (typeof symbolObj === 'string') {
+              symbol = symbolObj;
+            } else if (symbolObj?.symbol && typeof symbolObj.symbol === 'string') {
+              symbol = symbolObj.symbol;
+            }
+          }
+          // Method 4: Direct symbol string
+          else if (typeof pos.symbol === 'string') {
+            symbol = pos.symbol;
+          }
+          // Method 5: Check raw_symbol field
+          else if (pos.symbol?.symbol?.raw_symbol && typeof pos.symbol.symbol.raw_symbol === 'string') {
+            symbol = pos.symbol.symbol.raw_symbol;
+          }
+          // Method 6: Check metadata or other fields
+          else if (pos.ticker) {
+            symbol = String(pos.ticker);
+          }
+          else if (pos.security?.symbol) {
+            symbol = String(pos.security.symbol);
+          }
 
-          await prisma.position.upsert({
+          if (!symbol || symbol === 'null' || symbol === 'undefined') {
+            console.warn(`[Sync] Could not extract symbol from position:`, JSON.stringify(pos, null, 2));
+            invalidPositions.push(pos);
+            continue;
+          }
+
+          // Filter out zero-quantity positions (sold positions)
+          const quantity = pos.units || pos.quantity || 0;
+          if (quantity <= 0) {
+            console.log(`[Sync] Skipping position ${symbol} with zero quantity`);
+            continue;
+          }
+
+          validPositions.push({ symbol, position: pos });
+        }
+
+        console.log(`[Sync] Valid positions: ${validPositions.length}, Invalid: ${invalidPositions.length}`);
+
+        // Delete old positions not in the new list (only if we have valid positions)
+        if (validPositions.length > 0) {
+          const currentSymbols = validPositions.map(p => p.symbol);
+          await prisma.position.deleteMany({
             where: {
-              accountId_symbol: {
-                accountId: account.id,
-                symbol: symbol,
-              },
-            },
-            create: {
               accountId: account.id,
-              symbol: symbol,
-              securityName,
-              securityType,
-              quantity,
-              averageCost: avgCost,
-              currentPrice,
-              marketValue,
-              unrealizedPL,
-              unrealizedPLPercent,
-              currency,
-              lastSyncedAt: new Date(),
-              metadata: pos as any,
-            },
-            update: {
-              securityName,
-              quantity,
-              averageCost: avgCost,
-              currentPrice,
-              marketValue,
-              unrealizedPL,
-              unrealizedPLPercent,
-              lastSyncedAt: new Date(),
-              metadata: pos as any,
+              symbol: { notIn: currentSymbols },
             },
           });
         }
+
+        // Upsert current positions
+        let syncedCount = 0;
+        for (const { symbol, position: pos } of validPositions) {
+          try {
+            const quantity = pos.units || pos.quantity || 0;
+            const currentPrice = pos.price || pos.currentPrice || 0;
+            const marketValue = currentPrice * quantity;
+            const avgCost = pos.average_purchase_price || pos.averageCost || pos.cost_basis || currentPrice;
+            const unrealizedPL = pos.open_pnl || (currentPrice - avgCost) * quantity; // Use open_pnl if available
+            const unrealizedPLPercent = avgCost > 0 ? (unrealizedPL / (avgCost * quantity)) * 100 : 0;
+            
+            // Extract security name from nested structure
+            const securityName = 
+              pos.symbol?.symbol?.description || 
+              pos.symbol?.description || 
+              pos.security?.name || 
+              pos.name || 
+              symbol;
+            
+            // Extract security type from nested structure
+            const securityType = 
+              pos.symbol?.symbol?.type?.description || 
+              pos.symbol?.type?.description || 
+              pos.security?.type || 
+              pos.type || 
+              "EQUITY";
+            
+            // Extract currency from nested structure
+            const currency = 
+              pos.symbol?.symbol?.currency?.code || 
+              pos.symbol?.currency?.code || 
+              pos.currency?.code || 
+              pos.currency || 
+              "USD";
+
+            await prisma.position.upsert({
+              where: {
+                accountId_symbol: {
+                  accountId: account.id,
+                  symbol: symbol,
+                },
+              },
+              create: {
+                accountId: account.id,
+                symbol: symbol,
+                securityName,
+                securityType,
+                quantity,
+                averageCost: avgCost,
+                currentPrice,
+                marketValue,
+                unrealizedPL,
+                unrealizedPLPercent,
+                currency,
+                lastSyncedAt: new Date(),
+                metadata: pos as any,
+              },
+              update: {
+                securityName,
+                quantity,
+                averageCost: avgCost,
+                currentPrice,
+                marketValue,
+                unrealizedPL,
+                unrealizedPLPercent,
+                lastSyncedAt: new Date(),
+                metadata: pos as any,
+              },
+            });
+            syncedCount++;
+          } catch (posError) {
+            console.error(`[Sync] Error upserting position ${symbol} for account ${account.id}:`, posError);
+          }
+        }
+
+        console.log(`[Sync] Successfully synced ${syncedCount} position(s) for account ${account.id}`);
+        
+        // Update account sync timestamp
+        await prisma.brokerageAccount.update({
+          where: { id: account.id },
+          data: { lastSyncedAt: new Date() },
+        });
       } catch (error) {
-        console.error(`Error syncing positions for account ${account.id}:`, error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error(`[Sync] Error syncing positions for account ${account.id} (${account.snaptradeAccountId}):`, errorMessage);
+        console.error(`[Sync] Full error:`, error);
+        
+        // Store error in account
+        await prisma.brokerageAccount.update({
+          where: { id: account.id },
+          data: { 
+            syncError: errorMessage,
+            lastSyncedAt: new Date(), // Still update timestamp to show we tried
+          },
+        });
       }
     }
   }

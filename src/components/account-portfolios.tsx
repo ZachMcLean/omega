@@ -291,6 +291,11 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
   const totalChange = accounts.reduce((sum: number, acc) => sum + acc.change, 0);
   const totalChangePercent = (totalChange / (totalValue - totalChange)) * 100;
 
+  // Check if any accounts have no positions but have been synced (potential sync issue)
+  const accountsWithErrors = accounts.filter(acc => 
+    acc.details.positions.length === 0 && acc.details.lastSync !== "Never"
+  );
+
   const filteredAccounts = accounts
     .filter((acc) => 
       acc.broker.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -328,6 +333,11 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
               <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 text-xs">
                 {accounts.filter(a => a.isConnected).length} Connected
               </Badge>
+              {accountsWithErrors.length > 0 && (
+                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                  {accountsWithErrors.length} Need Sync
+                </Badge>
+              )}
             </div>
             <div className="flex items-center gap-3 flex-wrap text-sm">
               <div>
@@ -565,6 +575,36 @@ export function AccountPortfolios({ selectedPeriod }: AccountPortfoliosProps) {
                         <p className="text-white">{account.details.lastSync}</p>
                       </div>
                     </div>
+
+                    {/* Sync Error Warning */}
+                    {account.details.positions.length === 0 && account.details.lastSync !== "Never" && (
+                      <div className="mt-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="w-4 h-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-yellow-400 mb-1">No Positions Found</p>
+                            <p className="text-xs text-slate-400 mb-2">
+                              This account has a balance but no positions were synced. This could mean:
+                            </p>
+                            <ul className="text-xs text-slate-400 list-disc list-inside space-y-0.5 mb-2">
+                              <li>Positions are all cash (no stocks held)</li>
+                              <li>Sync encountered an error fetching positions</li>
+                              <li>SnapTrade API returned positions in an unexpected format</li>
+                            </ul>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="mt-2 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+                              onClick={handleSync}
+                              disabled={syncMutation.isPending}
+                            >
+                              <RefreshCw className={`w-3 h-3 mr-1.5 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
+                              Sync Positions Now
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Health & Diversification */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
